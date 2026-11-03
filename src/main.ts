@@ -97,7 +97,7 @@ const abbr = (z: string, d: Date) => abbrFmt.get(z)!.formatToParts(d).find((p) =
 const frame = document.getElementById('frame')!;
 frame.innerHTML = `
 <div class="safe">
-  <div class="notice"><span class="l1">Ordinære sendinger utgår &ndash; se <b>frikanalen.no/protest</b> for informasjon</span><span class="l2" id="service">Vi viser valgdata fra People&rsquo;s Tally som en tjeneste for våre seere</span></div>
+  <div class="notice"><span class="l1">Ordinære sendinger utgår &ndash; se <b>frikanalen.no/protest</b> for informasjon</span><span class="l2" id="service">Vi viser valgdata fra People&rsquo;s Tally som en tjeneste til våre seere</span></div>
   <header class="head">
     <div class="title">Mellomvalg</div>
     <nav class="tabs" id="tabs">

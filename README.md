@@ -10,7 +10,7 @@ Three modes:
 - **Demo (`?demo=1`):** replays an invented night to show the motion. Candidate
   names are hidden here, so no real person is shown next to an invented result.
 - **Live:** after the first `update()` push. Credits "Vi viser valgdata fra
-  People's Tally som en tjeneste for våre seere".
+  People's Tally som en tjeneste til våre seere".
 
 Nominees for Senate and governor are in `src/candidates.json`, read from
 Wikipedia on 3 Nov 2026. The Senate page looked stale (newest data June 2026)
@@ -20,7 +20,7 @@ feed only.
 
 ## Always on screen
 - Notice: "Ordinære sendinger utgår – se frikanalen.no/protest for informasjon",
-  with "Vi viser valgdata fra People's Tally som en tjeneste for våre seere"
+  with "Vi viser valgdata fra People's Tally som en tjeneste til våre seere"
   under it (in demo mode it says the numbers are invented instead)
 - "Mellomvalg" and the tabs, the source credit
 - Clocks: New York, Chicago, Denver, Los Angeles, Alaska, Hawaii (12-hour) and
