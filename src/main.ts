@@ -31,7 +31,10 @@ const SPEED = Number(q.get('speed')) || 2; // simulated minutes per real second
 const TICK_MS = 3000; // how often the sample feed delivers a new count
 const HOLD_MS = (Number(q.get('hold')) || 9) * 1000; // per subpage
 const ROWS = 4;
-const ROW_STEP = 68;
+// Read the CSS row geometry so ordering animations stay aligned with the layout.
+const layoutStyle = getComputedStyle(document.documentElement);
+const ROW_STEP = parseFloat(layoutStyle.getPropertyValue('--row-height'))
+  + parseFloat(layoutStyle.getPropertyValue('--row-gap'));
 
 const NAME: Record<Party, string> = { D: 'Demokratene', R: 'Republikanerne' };
 /** Who a seat is won from: "vinner setet fra …". */
@@ -817,7 +820,7 @@ function candidatesStep(r: RaceState): Step {
 function tilesStep(races: RaceState[]): Step {
   return {
     ms: 5000 + Math.min(races.length, 16) * 150,
-    html: `<div class="tiles">${races.slice(0, 16).map((r, i) => {
+    html: `<div class="tiles${races.length > 12 ? ' dense' : ''}">${races.slice(0, 16).map((r, i) => {
       const flip = isFlip(r);
       return `<div class="tile ${col(r, r.winner!)}" style="transition-delay:${200 + i * 90}ms">
         <b>${r.seed.name}</b><span>${sideName(r, r.winner!)}${flip ? ' &middot; skifte' : ''}</span></div>`;
