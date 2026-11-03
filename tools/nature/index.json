@@ -4,111 +4,558 @@
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Carduelis_tristis_-Michigan%2C_USA_-male-8.jpg/330px-Carduelis_tristis_-Michigan%2C_USA_-male-8.jpg",
   "file": "nature/American%20goldfinch.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Carduelis_tristis_-Michigan%2C_USA_-male-8.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Carduelis_tristis_-Michigan%2C_USA_-male-8.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/American%20goldfinch.jpg.500.jpg"
  },
  "American robin": {
   "title": "American robin",
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/American_robin_%2871307%29.jpg/330px-American_robin_%2871307%29.jpg",
   "file": "nature/American%20robin.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/9/97/American_robin_%2871307%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/9/97/American_robin_%2871307%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/American%20robin.jpg.500.jpg"
  },
  "Aquilegia coerulea": {
   "title": "Aquilegia coerulea",
   "desc": "North American species of columbine",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Aquilegia_coerulea_-_Laura_Gaudette_01.jpg/330px-Aquilegia_coerulea_-_Laura_Gaudette_01.jpg",
   "file": "nature/Aquilegia%20coerulea.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Aquilegia_coerulea_-_Laura_Gaudette_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Aquilegia_coerulea_-_Laura_Gaudette_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Aquilegia%20coerulea.jpg.500.jpg"
  },
  "Artemisia tridentata": {
   "title": "Artemisia tridentata",
   "desc": "Species of plant",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Sagebrushsjc.jpg/330px-Sagebrushsjc.jpg",
   "file": "nature/Artemisia%20tridentata.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/d/df/Sagebrushsjc.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/d/df/Sagebrushsjc.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Artemisia%20tridentata.jpg.500.jpg"
  },
  "Baltimore oriole": {
   "title": "Baltimore oriole",
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Baltimore_Oriole-_dorsum.jpg/330px-Baltimore_Oriole-_dorsum.jpg",
   "file": "nature/Baltimore%20oriole.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Baltimore_Oriole-_dorsum.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Baltimore_Oriole-_dorsum.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Baltimore%20oriole.jpg.500.jpg"
  },
  "Black-capped chickadee": {
   "title": "Black-capped chickadee",
   "desc": "Species of small, non-migratory, North American passerine",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Poecile-atricapilla-001.jpg/330px-Poecile-atricapilla-001.jpg",
   "file": "nature/Black-capped%20chickadee.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Poecile-atricapilla-001.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Poecile-atricapilla-001.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Black-capped%20chickadee.jpg.500.jpg"
  },
  "Brown pelican": {
   "title": "Brown pelican",
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Brown_pelican_in_flight_%28Bodega_Bay%29.jpg/330px-Brown_pelican_in_flight_%28Bodega_Bay%29.jpg",
   "file": "nature/Brown%20pelican.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/06/Brown_pelican_in_flight_%28Bodega_Bay%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/06/Brown_pelican_in_flight_%28Bodega_Bay%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Brown%20pelican.jpg.500.jpg"
  },
  "Brown thrasher": {
   "title": "Brown thrasher",
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Brown_thrasher_in_CP_%2802147%29.jpg/330px-Brown_thrasher_in_CP_%2802147%29.jpg",
   "file": "nature/Brown%20thrasher.jpg",
-  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Brown_thrasher_in_CP_%2802147%29.jpg/3840px-Brown_thrasher_in_CP_%2802147%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Brown_thrasher_in_CP_%2802147%29.jpg/3840px-Brown_thrasher_in_CP_%2802147%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Brown%20thrasher.jpg.500.jpg"
  },
  "Cactus wren": {
   "title": "Cactus wren",
   "desc": "Species of bird found in North America",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Cactus_Wren_Sandia_Mountains.jpg/330px-Cactus_Wren_Sandia_Mountains.jpg",
   "file": "nature/Cactus%20wren.jpg",
-  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Cactus_Wren_Sandia_Mountains.jpg/3840px-Cactus_Wren_Sandia_Mountains.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Cactus_Wren_Sandia_Mountains.jpg/3840px-Cactus_Wren_Sandia_Mountains.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Cactus%20wren.jpg.500.jpg"
  },
  "California gull": {
   "title": "California gull",
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/CaliforniaGull.jpg/330px-CaliforniaGull.jpg",
   "file": "nature/California%20gull.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/6/64/CaliforniaGull.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/6/64/CaliforniaGull.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/California%20gull.jpg.500.jpg"
  },
  "California quail": {
   "title": "California quail",
   "desc": "Species of ground-dwelling bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/California_quail_%28Callipepla_californica%29_male_Tricao.jpg/330px-California_quail_%28Callipepla_californica%29_male_Tricao.jpg",
   "file": "nature/California%20quail.jpg",
-  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/California_quail_%28Callipepla_californica%29_male_Tricao.jpg/3840px-California_quail_%28Callipepla_californica%29_male_Tricao.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/California_quail_%28Callipepla_californica%29_male_Tricao.jpg/3840px-California_quail_%28Callipepla_californica%29_male_Tricao.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/California%20quail.jpg.500.jpg"
  },
  "Calochortus nuttallii": {
   "title": "Calochortus nuttallii",
   "desc": "Plant species in the lily family",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Sego_lily_cm.jpg/330px-Sego_lily_cm.jpg",
   "file": "nature/Calochortus%20nuttallii.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/01/Sego_lily_cm.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/01/Sego_lily_cm.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Calochortus%20nuttallii.jpg.500.jpg"
  },
  "Camellia japonica": {
   "title": "Camellia japonica",
   "desc": "Species of flowering plant",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Camellia_japonica_NBG.jpg/330px-Camellia_japonica_NBG.jpg",
   "file": "nature/Camellia%20japonica.jpg",
-  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Camellia_japonica_NBG.jpg/3840px-Camellia_japonica_NBG.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Camellia_japonica_NBG.jpg/3840px-Camellia_japonica_NBG.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Camellia%20japonica.jpg.500.jpg"
  },
  "Carolina wren": {
   "title": "Carolina wren",
   "desc": "Species of bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Carolina_wren_%2814391%29.jpg/330px-Carolina_wren_%2814391%29.jpg",
   "file": "nature/Carolina%20wren.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Carolina_wren_%2814391%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Carolina_wren_%2814391%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Carolina%20wren.jpg.500.jpg"
  },
  "Castilleja linariifolia": {
   "title": "Castilleja linariifolia",
   "desc": "Species of flowering plant",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Indian_Paintbrush_in_Grand_Teton_NP-NPS.jpg/330px-Indian_Paintbrush_in_Grand_Teton_NP-NPS.jpg",
   "file": "nature/Castilleja%20linariifolia.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/7/79/Indian_Paintbrush_in_Grand_Teton_NP-NPS.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/7/79/Indian_Paintbrush_in_Grand_Teton_NP-NPS.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Castilleja%20linariifolia.jpg.500.jpg"
  },
  "Common loon": {
   "title": "Common loon",
   "desc": "Species of freshwater bird",
   "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Gavia_immer_-Minocqua%2C_Wisconsin%2C_USA_-swimming-8.jpg/330px-Gavia_immer_-Minocqua%2C_Wisconsin%2C_USA_-swimming-8.jpg",
   "file": "nature/Common%20loon.jpg",
-  "orig": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Gavia_immer_-Minocqua%2C_Wisconsin%2C_USA_-swimming-8.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Gavia_immer_-Minocqua%2C_Wisconsin%2C_USA_-swimming-8.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Common%20loon.jpg.500.jpg"
+ },
+ "Common pheasant": {
+  "title": "Common pheasant",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Phasianus_colchicus_Oulu_20200524_02.jpg/330px-Phasianus_colchicus_Oulu_20200524_02.jpg",
+  "file": "nature/Common%20pheasant.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Phasianus_colchicus_Oulu_20200524_02.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Common%20pheasant.jpg.500.jpg"
+ },
+ "Cornus florida": {
+  "title": "Cornus florida",
+  "desc": "Species of flowering plant in the dogwood family",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Cornus_florida_Arkansas.jpg/330px-Cornus_florida_Arkansas.jpg",
+  "file": "nature/Cornus%20florida.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Cornus_florida_Arkansas.jpg/3840px-Cornus_florida_Arkansas.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Cornus%20florida.jpg.500.jpg"
+ },
+ "Crataegus": {
+  "title": "Crataegus",
+  "desc": "Genus of flowering plants in the rose family Rosaceae",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Crataegus%2C_various_species%2C_fruit.jpg/330px-Crataegus%2C_various_species%2C_fruit.jpg",
+  "file": "nature/Crataegus.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Crataegus%2C_various_species%2C_fruit.jpg/3840px-Crataegus%2C_various_species%2C_fruit.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Crataegus.jpg.500.jpg"
+ },
+ "Cypripedium reginae": {
+  "title": "Cypripedium reginae",
+  "desc": "Species of orchid",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Cypripedium_reginae_Orchi_004.jpg/330px-Cypripedium_reginae_Orchi_004.jpg",
+  "file": "nature/Cypripedium%20reginae.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Cypripedium_reginae_Orchi_004.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Cypripedium%20reginae.jpg.500.jpg"
+ },
+ "Delaware Blue Hen": {
+  "title": "Delaware Blue Hen",
+  "desc": "Blue strain of fighting chicken",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Delaware_Blue_rooster.png/330px-Delaware_Blue_rooster.png",
+  "file": "nature/Delaware%20Blue%20Hen.png",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/3/36/Delaware_Blue_rooster.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Delaware%20Blue%20Hen.png.500.png"
+ },
+ "Dianthus caryophyllus": {
+  "title": "Dianthus caryophyllus",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/W_carnation4051.jpg/330px-W_carnation4051.jpg",
+  "file": "nature/Dianthus%20caryophyllus.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/3/3b/W_carnation4051.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Dianthus%20caryophyllus.jpg.500.jpg"
+ },
+ "Eastern bluebird": {
+  "title": "Eastern bluebird",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Sialia_sialis_-Michigan%2C_USA_-pair-8c.jpg/330px-Sialia_sialis_-Michigan%2C_USA_-pair-8c.jpg",
+  "file": "nature/Eastern%20bluebird.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/00/Sialia_sialis_-Michigan%2C_USA_-pair-8c.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Eastern%20bluebird.jpg.500.jpg"
+ },
+ "Eastern white pine": {
+  "title": "Pinus strobus",
+  "desc": "Species of pine tree",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Pinus_strobus_trees.jpg/330px-Pinus_strobus_trees.jpg",
+  "file": "nature/Eastern%20white%20pine.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/48/Pinus_strobus_trees.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Eastern%20white%20pine.jpg.500.jpg"
+ },
+ "Epigaea repens": {
+  "title": "Epigaea repens",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Trailing_arbutus_2006.jpg/330px-Trailing_arbutus_2006.jpg",
+  "file": "nature/Epigaea%20repens.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Trailing_arbutus_2006.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Epigaea%20repens.jpg.500.jpg"
+ },
+ "Eschscholzia californica": {
+  "title": "Eschscholzia californica",
+  "desc": "Species of flowering plant and state flower of California",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Kaldari_Eschscholzia_californica_01.jpg/330px-Kaldari_Eschscholzia_californica_01.jpg",
+  "file": "nature/Eschscholzia%20californica.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/8/83/Kaldari_Eschscholzia_californica_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Eschscholzia%20californica.jpg.500.jpg"
+ },
+ "Gelsemium sempervirens": {
+  "title": "Gelsemium sempervirens",
+  "desc": "Species of plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Gelsemium_sempervirens3.jpg/330px-Gelsemium_sempervirens3.jpg",
+  "file": "nature/Gelsemium%20sempervirens.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Gelsemium_sempervirens3.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Gelsemium%20sempervirens.jpg.500.jpg"
+ },
+ "Greater roadrunner": {
+  "title": "Greater roadrunner",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Greater_Roadrunner_Tingley_Beach.jpg/330px-Greater_Roadrunner_Tingley_Beach.jpg",
+  "file": "nature/Greater%20roadrunner.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Greater_Roadrunner_Tingley_Beach.jpg/3840px-Greater_Roadrunner_Tingley_Beach.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Greater%20roadrunner.jpg.500.jpg"
+ },
+ "Helianthus annuus": {
+  "title": "Common sunflower",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Sunflower_sky_backdrop.jpg/330px-Sunflower_sky_backdrop.jpg",
+  "file": "nature/Helianthus%20annuus.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/40/Sunflower_sky_backdrop.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Helianthus%20annuus.jpg.500.jpg"
+ },
+ "Hermit thrush": {
+  "title": "Hermit thrush",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Hermit_thrush_%2810787%29.jpg/330px-Hermit_thrush_%2810787%29.jpg",
+  "file": "nature/Hermit%20thrush.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Hermit_thrush_%2810787%29.jpg/3840px-Hermit_thrush_%2810787%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Hermit%20thrush.jpg.500.jpg"
+ },
+ "Hibiscus brackenridgei": {
+  "title": "Hibiscus brackenridgei",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Starr_080304-3208_Hibiscus_brackenridgei_subsp._brackenridgei.jpg/330px-Starr_080304-3208_Hibiscus_brackenridgei_subsp._brackenridgei.jpg",
+  "file": "nature/Hibiscus%20brackenridgei.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/00/Starr_080304-3208_Hibiscus_brackenridgei_subsp._brackenridgei.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Hibiscus%20brackenridgei.jpg.500.jpg"
+ },
+ "Iris (plant)": {
+  "title": "Iris (plant)",
+  "desc": "Genus of flowering plants",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_sanguinea_cultivar%2C_Wakehurst_Place%2C_UK_-_Diliff.jpg/330px-Iris_sanguinea_cultivar%2C_Wakehurst_Place%2C_UK_-_Diliff.jpg",
+  "file": "nature/Iris%20%28plant%29.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_sanguinea_cultivar%2C_Wakehurst_Place%2C_UK_-_Diliff.jpg/3840px-Iris_sanguinea_cultivar%2C_Wakehurst_Place%2C_UK_-_Diliff.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Iris%20%28plant%29.jpg.500.jpg"
+ },
+ "Kalmia latifolia": {
+  "title": "Kalmia latifolia",
+  "desc": "Species of plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Kalmia_Latifolia.jpg/330px-Kalmia_Latifolia.jpg",
+  "file": "nature/Kalmia%20latifolia.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Kalmia_Latifolia.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Kalmia%20latifolia.jpg.500.jpg"
+ },
+ "Lark bunting": {
+  "title": "Lark bunting",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Calamospiza_melanocorys_by_Nick_Varvel.jpg/330px-Calamospiza_melanocorys_by_Nick_Varvel.jpg",
+  "file": "nature/Lark%20bunting.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Calamospiza_melanocorys_by_Nick_Varvel.jpg/3840px-Calamospiza_melanocorys_by_Nick_Varvel.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Lark%20bunting.jpg.500.jpg"
+ },
+ "Lewisia rediviva": {
+  "title": "Bitterroot",
+  "desc": "Plant species in the springbeauty family",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Lewisia_rediviva_9789.JPG/330px-Lewisia_rediviva_9789.JPG",
+  "file": "nature/Lewisia%20rediviva.JPG",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Lewisia_rediviva_9789.JPG/3840px-Lewisia_rediviva_9789.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Lewisia%20rediviva.JPG.500.JPG"
+ },
+ "Lupinus texensis": {
+  "title": "Lupinus texensis",
+  "desc": "Species of lupine",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Bluebonnet-8100.jpg/330px-Bluebonnet-8100.jpg",
+  "file": "nature/Lupinus%20texensis.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Bluebonnet-8100.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Lupinus%20texensis.jpg.500.jpg"
+ },
+ "Magnolia grandiflora": {
+  "title": "Magnolia grandiflora",
+  "desc": "Species of tree",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Magn%C3%B2lia_a_Verbania.JPG/330px-Magn%C3%B2lia_a_Verbania.JPG",
+  "file": "nature/Magnolia%20grandiflora.JPG",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Magn%C3%B2lia_a_Verbania.JPG/3840px-Magn%C3%B2lia_a_Verbania.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Magnolia%20grandiflora.JPG.500.JPG"
+ },
+ "Mahonia aquifolium": {
+  "title": "Berberis aquifolium",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Mahonia_aquifolium.jpg/330px-Mahonia_aquifolium.jpg",
+  "file": "nature/Mahonia%20aquifolium.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Mahonia_aquifolium.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Mahonia%20aquifolium.jpg.500.jpg"
+ },
+ "Malus domestica": {
+  "title": "Apple",
+  "desc": "Edible fruit",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Pink_lady_and_cross_section.jpg/330px-Pink_lady_and_cross_section.jpg",
+  "file": "nature/Malus%20domestica.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Pink_lady_and_cross_section.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Malus%20domestica.jpg.500.jpg"
+ },
+ "Mountain bluebird": {
+  "title": "Mountain bluebird",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Mountain_Bluebird.jpg/330px-Mountain_Bluebird.jpg",
+  "file": "nature/Mountain%20bluebird.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/0/03/Mountain_Bluebird.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Mountain%20bluebird.jpg.500.jpg"
+ },
+ "Myosotis alpestris": {
+  "title": "Myosotis alpestris",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Myosotis_alpestris.jpg/330px-Myosotis_alpestris.jpg",
+  "file": "nature/Myosotis%20alpestris.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/1/16/Myosotis_alpestris.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Myosotis%20alpestris.jpg.500.jpg"
+ },
+ "Nene (bird)": {
+  "title": "Nene (bird)",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Branta_sandvicensis_LC399.jpg/330px-Branta_sandvicensis_LC399.jpg",
+  "file": "nature/Nene%20%28bird%29.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/1/14/Branta_sandvicensis_LC399.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Nene%20%28bird%29.jpg.500.jpg"
+ },
+ "Northern cardinal": {
+  "title": "Northern cardinal",
+  "desc": "Species of North American bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Male_northern_cardinal_in_Central_Park_%2852612%29.jpg/330px-Male_northern_cardinal_in_Central_Park_%2852612%29.jpg",
+  "file": "nature/Northern%20cardinal.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Male_northern_cardinal_in_Central_Park_%2852612%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Northern%20cardinal.jpg.500.jpg"
+ },
+ "Northern flicker": {
+  "title": "Northern flicker",
+  "desc": "Member of the woodpecker family",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Northern_yellow-shafted_flicker_male_%2833737%29_%28cropped%29.jpg/330px-Northern_yellow-shafted_flicker_male_%2833737%29_%28cropped%29.jpg",
+  "file": "nature/Northern%20flicker.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/6/60/Northern_yellow-shafted_flicker_male_%2833737%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Northern%20flicker.jpg.500.jpg"
+ },
+ "Northern mockingbird": {
+  "title": "Northern mockingbird",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Mockingbird_in_Bay_Ridge_%2885082%29.jpg/330px-Mockingbird_in_Bay_Ridge_%2885082%29.jpg",
+  "file": "nature/Northern%20mockingbird.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Mockingbird_in_Bay_Ridge_%2885082%29.jpg/3840px-Mockingbird_in_Bay_Ridge_%2885082%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Northern%20mockingbird.jpg.500.jpg"
+ },
+ "Orange blossom": {
+  "title": "Orange blossom",
+  "desc": "Flower of the orange tree",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Orange_Blossom_%28NGM_XXXI_p504%29.jpg/330px-Orange_Blossom_%28NGM_XXXI_p504%29.jpg",
+  "file": "nature/Orange%20blossom.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Orange_Blossom_%28NGM_XXXI_p504%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Orange%20blossom.jpg.500.jpg"
+ },
+ "Paeonia lactiflora": {
+  "title": "Paeonia lactiflora",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Lactiflora1b.UME.jpg/330px-Lactiflora1b.UME.jpg",
+  "file": "nature/Paeonia%20lactiflora.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/b/be/Lactiflora1b.UME.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Paeonia%20lactiflora.jpg.500.jpg"
+ },
+ "Philadelphus lewisii": {
+  "title": "Philadelphus lewisii",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Philadelphus_lewisii_5.jpg/330px-Philadelphus_lewisii_5.jpg",
+  "file": "nature/Philadelphus%20lewisii.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/6/69/Philadelphus_lewisii_5.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Philadelphus%20lewisii.jpg.500.jpg"
+ },
+ "Prunus persica": {
+  "title": "Peach",
+  "desc": "Type of fruit tree, or its fruit",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Illustration_Prunus_persica_clean_no_descr.jpg/330px-Illustration_Prunus_persica_clean_no_descr.jpg",
+  "file": "nature/Prunus%20persica.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/9/92/Illustration_Prunus_persica_clean_no_descr.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Prunus%20persica.jpg.500.jpg"
+ },
+ "Pulsatilla nuttalliana": {
+  "title": "Pulsatilla nuttalliana",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Pulsatilla_nuttalliana_Manitoba_May_2019.jpg/330px-Pulsatilla_nuttalliana_Manitoba_May_2019.jpg",
+  "file": "nature/Pulsatilla%20nuttalliana.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/5/59/Pulsatilla_nuttalliana_Manitoba_May_2019.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Pulsatilla%20nuttalliana.jpg.500.jpg"
+ },
+ "Purple finch": {
+  "title": "Purple finch",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Carpodacus_purpureus_CT3.jpg/330px-Carpodacus_purpureus_CT3.jpg",
+  "file": "nature/Purple%20finch.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/42/Carpodacus_purpureus_CT3.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Purple%20finch.jpg.500.jpg"
+ },
+ "Rhode Island Red": {
+  "title": "Rhode Island Red",
+  "desc": "American breed of domestic chicken",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Rhode_Island_Red_cock%2C_cropped.jpg/330px-Rhode_Island_Red_cock%2C_cropped.jpg",
+  "file": "nature/Rhode%20Island%20Red.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/8/83/Rhode_Island_Red_cock%2C_cropped.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Rhode%20Island%20Red.jpg.500.jpg"
+ },
+ "Rhododendron macrophyllum": {
+  "title": "Rhododendron macrophyllum",
+  "desc": "Species of plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Rhododendron_macrophyllum_4861.JPG/330px-Rhododendron_macrophyllum_4861.JPG",
+  "file": "nature/Rhododendron%20macrophyllum.JPG",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Rhododendron_macrophyllum_4861.JPG/3840px-Rhododendron_macrophyllum_4861.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Rhododendron%20macrophyllum.JPG.500.JPG"
+ },
+ "Rhododendron maximum": {
+  "title": "Rhododendron maximum",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/American_Rhododendron.jpg/330px-American_Rhododendron.jpg",
+  "file": "nature/Rhododendron%20maximum.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/American_Rhododendron.jpg/3840px-American_Rhododendron.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Rhododendron%20maximum.jpg.500.jpg"
+ },
+ "Rosa 'Oklahoma'": {
+  "title": "Rosa 'Oklahoma'",
+  "desc": "Rose cultivar",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Rose%2C_Oklahoma_-_Flickr_-_nekonomania.jpg/330px-Rose%2C_Oklahoma_-_Flickr_-_nekonomania.jpg",
+  "file": "nature/Rosa%20%27Oklahoma%27.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Rose%2C_Oklahoma_-_Flickr_-_nekonomania.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Rosa%20%27Oklahoma%27.jpg.500.jpg"
+ },
+ "Rosa arkansana": {
+  "title": "Rosa arkansana",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Rosa_arkansana.jpg/330px-Rosa_arkansana.jpg",
+  "file": "nature/Rosa%20arkansana.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Rosa_arkansana.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Rosa%20arkansana.jpg.500.jpg"
+ },
+ "Rosa laevigata": {
+  "title": "Rosa laevigata",
+  "desc": "Species of vine",
+  "src": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cherokee_rose.jpg",
+  "file": "nature/Rosa%20laevigata.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cherokee_rose.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+ },
+ "Rose": {
+  "title": "Rose",
+  "desc": "Genus of flowering plants",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Rosa_rubiginosa_1.jpg/330px-Rosa_rubiginosa_1.jpg",
+  "file": "nature/Rose.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Rosa_rubiginosa_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Rose.jpg.500.jpg"
+ },
+ "Rudbeckia hirta": {
+  "title": "Rudbeckia hirta",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Rudbeckia_hirta_kz03.jpg/330px-Rudbeckia_hirta_kz03.jpg",
+  "file": "nature/Rudbeckia%20hirta.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Rudbeckia_hirta_kz03.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Rudbeckia%20hirta.jpg.500.jpg"
+ },
+ "Ruffed grouse": {
+  "title": "Ruffed grouse",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Ruffed_grouse_%2880585%29.jpg/330px-Ruffed_grouse_%2880585%29.jpg",
+  "file": "nature/Ruffed%20grouse.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Ruffed_grouse_%2880585%29.jpg/3840px-Ruffed_grouse_%2880585%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Ruffed%20grouse.jpg.500.jpg"
+ },
+ "Saguaro": {
+  "title": "Saguaro",
+  "desc": "Species of cactus in the Sonoran Desert",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Carnegiea_gigantea_in_Saguaro_National_Park_near_Tucson%2C_Arizona_during_November_%2858%29.jpg/330px-Carnegiea_gigantea_in_Saguaro_National_Park_near_Tucson%2C_Arizona_during_November_%2858%29.jpg",
+  "file": "nature/Saguaro.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Carnegiea_gigantea_in_Saguaro_National_Park_near_Tucson%2C_Arizona_during_November_%2858%29.jpg/1920px-Carnegiea_gigantea_in_Saguaro_National_Park_near_Tucson%2C_Arizona_during_November_%2858%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Saguaro.jpg.500.jpg"
+ },
+ "Scissor-tailed flycatcher": {
+  "title": "Scissor-tailed flycatcher",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Tyrannus_forficatus_on_branch.jpg/330px-Tyrannus_forficatus_on_branch.jpg",
+  "file": "nature/Scissor-tailed%20flycatcher.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/4/45/Tyrannus_forficatus_on_branch.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Scissor-tailed%20flycatcher.jpg.500.jpg"
+ },
+ "Solidago": {
+  "title": "Solidago",
+  "desc": "Genus of flowering plants",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Solidago_virgaurea_var._leiocarpa_02-2.jpg/330px-Solidago_virgaurea_var._leiocarpa_02-2.jpg",
+  "file": "nature/Solidago.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/6/62/Solidago_virgaurea_var._leiocarpa_02-2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Solidago.jpg.500.jpg"
+ },
+ "Solidago gigantea": {
+  "title": "Solidago gigantea",
+  "desc": "Species of plant native to North America",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Solidago_gigantea01.jpg/330px-Solidago_gigantea01.jpg",
+  "file": "nature/Solidago%20gigantea.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Solidago_gigantea01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Solidago%20gigantea.jpg.500.jpg"
+ },
+ "Syringa vulgaris": {
+  "title": "Syringa vulgaris",
+  "desc": "Plant species in the olive family",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Lilac_Flower%26Leaves%2C_SC%2C_Vic%2C_13.10.2007.jpg/330px-Lilac_Flower%26Leaves%2C_SC%2C_Vic%2C_13.10.2007.jpg",
+  "file": "nature/Syringa%20vulgaris.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/3/35/Lilac_Flower%26Leaves%2C_SC%2C_Vic%2C_13.10.2007.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Syringa%20vulgaris.jpg.500.jpg"
+ },
+ "Trifolium pratense": {
+  "title": "Trifolium pratense",
+  "desc": "Species of flowering plant in the bean family",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Trifolium_pratense_-_Keila2.jpg/330px-Trifolium_pratense_-_Keila2.jpg",
+  "file": "nature/Trifolium%20pratense.jpg",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Trifolium_pratense_-_Keila2.jpg/3840px-Trifolium_pratense_-_Keila2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Trifolium%20pratense.jpg.500.jpg"
+ },
+ "Viola sororia": {
+  "title": "Viola sororia",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Viola_sororia_in_Wisconsin.jpg/330px-Viola_sororia_in_Wisconsin.jpg",
+  "file": "nature/Viola%20sororia.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Viola_sororia_in_Wisconsin.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Viola%20sororia.jpg.500.jpg"
+ },
+ "Western meadowlark": {
+  "title": "Western meadowlark",
+  "desc": "Medium sized bird of North America with distinctive yellow chest",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Sturnella_neglecta_GNP_02.jpg/330px-Sturnella_neglecta_GNP_02.jpg",
+  "file": "nature/Western%20meadowlark.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/5/53/Sturnella_neglecta_GNP_02.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Western%20meadowlark.jpg.500.jpg"
+ },
+ "Willow ptarmigan": {
+  "title": "Willow ptarmigan",
+  "desc": "Species of bird",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Lagopus_lagopus_-_adult_%28Denali%2C_2010%29.jpg/330px-Lagopus_lagopus_-_adult_%28Denali%2C_2010%29.jpg",
+  "file": "nature/Willow%20ptarmigan.jpg",
+  "orig": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Lagopus_lagopus_-_adult_%28Denali%2C_2010%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+  "big": "nature/Willow%20ptarmigan.jpg.500.jpg"
+ },
+ "Yucca glauca": {
+  "title": "Yucca glauca",
+  "desc": "Species of flowering plant",
+  "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Yucca_glauca_by_Nick.JPG/330px-Yucca_glauca_by_Nick.JPG",
+  "file": "nature/Yucca%20glauca.JPG",
+  "orig": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Yucca_glauca_by_Nick.JPG/3840px-Yucca_glauca_by_Nick.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+  "big": "nature/Yucca%20glauca.JPG.500.JPG"
  }
 }

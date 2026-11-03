@@ -1,5 +1,6 @@
 import json, ssl, time, urllib.request, os
-ctx = ssl.create_default_context(cafile='/root/.ccr/ca-bundle.crt')
+_ca = '/root/.ccr/ca-bundle.crt'
+ctx = ssl.create_default_context(cafile=_ca if os.path.exists(_ca) else None)
 UA = {'User-Agent': 'MellomvalgNature/0.1 (https://frikanalen.no; one-off build of a few images)'}
 d = json.load(open('nature/index.json'))
 for t, v in d.items():
