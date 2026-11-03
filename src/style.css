@@ -305,8 +305,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .fs-name { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; white-space: nowrap; }
 .fs-nick { font-size: 18px; color: var(--muted); font-style: italic; margin-top: 2px; }
 .fs-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px 18px; margin-top: 26px; }
-.fs-stats div, .fv-side div { display: flex; flex-direction: column; }
-.fs-stats .k, .fv-side .k, .fv .k { font-size: 14px; color: var(--muted); letter-spacing: 0.02em; }
+.fs-stats div { display: flex; flex-direction: column; }
+.fs-stats .k { font-size: 14px; color: var(--muted); letter-spacing: 0.02em; }
 .fs-stats b { font-size: 24px; font-weight: 600; white-space: nowrap; }
 .fs-stats small { font-size: 14px; color: var(--muted); white-space: nowrap; }
 .fs-loc { align-self: end; }
@@ -316,13 +316,45 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .fs-loc circle { fill: none; stroke: var(--flip); stroke-width: 2.5; }
 
 /* State fact sheet: trivia */
-.fv-body { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 28px; height: var(--page-height); }
-.fv-text { background: var(--panel); padding: 18px 22px; }
+.fv-text { background: var(--panel); padding: 24px 28px; min-height: var(--page-height); max-width: 940px; }
 .fv-text p { margin: 0 0 10px; font-size: 23px; line-height: 1.35; text-wrap: pretty; }
 .fv-text p:last-child { margin-bottom: 0; }
 .fv-text p + p { font-size: 20px; color: var(--muted); }
-.fv-side { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
-.fv-side b { font-size: 21px; font-weight: 600; line-height: 1.25; }
+
+/* State election and ballot-measure pages fit the same broadcast safe area. */
+.state-election { display: flex; flex-direction: column; gap: 12px; height: var(--page-height); background: var(--panel); padding: 18px 22px 12px; }
+.state-candidates { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 28px; }
+.state-candidates:empty { display: none; }
+.state-race .k, .state-house .k { font-size: 15px; color: var(--muted); }
+.state-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 9px; }
+.state-candidate { border-left: 3px solid var(--i); padding-left: 12px; min-width: 0; }
+.state-candidate.d { border-color: var(--d); }
+.state-candidate.r { border-color: var(--r); }
+.state-candidate b { display: block; font-size: 23px; line-height: 1.2; }
+.state-candidate span { font-size: 17px; color: var(--muted); }
+.state-candidate.won { background: var(--i-soft); }
+.state-candidate.won.d { background: var(--d-soft); }
+.state-candidate.won.r { background: var(--r-soft); }
+.state-candidate.lost { opacity: 0.6; }
+.state-winner { display: inline-block; margin-left: 8px; color: var(--ink); font-size: 15px; white-space: nowrap; }
+.state-leader { display: inline-block; margin-left: 8px; padding: 0 4px; border: 1px dashed var(--muted); color: var(--ink); font-size: 14px; line-height: 18px; white-space: nowrap; }
+.state-house-chips { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.state-house-chip { background: linear-gradient(to right, var(--left) 0 var(--share), var(--right) var(--share) 100%); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; text-align: center; font-size: 14px; line-height: 16px; font-variant-numeric: tabular-nums; }
+.state-chip-top { display: flex; justify-content: center; align-items: center; gap: 3px; white-space: nowrap; }
+.state-chip-top strong { font-size: 11px; line-height: 16px; }
+.state-house-chip small { display: block; font-size: 11px; line-height: 13px; color: var(--ink); }
+.state-house-chip.waiting { background: repeating-linear-gradient(135deg, #ffffff99 0 3px, #ffffffcc 3px 6px), linear-gradient(to right, var(--left) 0 50%, var(--right) 50% 100%); }
+.state-house-chip.won { background: var(--i-soft); border-color: var(--i); color: var(--i-ink); }
+.state-house-chip.won.d { background: var(--d-soft); border-color: var(--d); color: var(--d-ink); }
+.state-house-chip.won.r { background: var(--r-soft); border-color: var(--r); color: var(--r-ink); }
+.state-election .pcredit { margin-top: auto; }
+.state-measures { height: var(--page-height); display: flex; flex-direction: column; }
+.measure-heading { display: flex; justify-content: space-between; font-size: 18px; color: var(--muted); margin-bottom: 10px; }
+.measure-list { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+.measure { background: var(--panel); padding: 18px 22px; }
+.measure-title b { display: block; font-size: 24px; line-height: 1.15; text-wrap: pretty; }
+.measure-title span { display: block; font-size: 15px; color: var(--muted); margin-top: 4px; }
+.measure p { font-size: 21px; line-height: 1.3; margin: 14px 0 0; text-wrap: pretty; }
 .flag.big.noflag { width: 96px; }
 .tabs .ind { transition: transform 600ms var(--ease), width 600ms var(--ease), opacity 400ms ease; }
 .sublabel { font-weight: 700; color: var(--ink); padding-top: 2px; }

@@ -44,8 +44,27 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
 - **Delstatene:** a fact sheet per visit: Fakta (flag, the state's outline,
   where it is in the US, capital, largest city, 2020 population, area compared
   with mainland Norway, statehood, poll close), Delstatsfugl and
-  Delstatsblomst (photo, uncropped at its own aspect) and Visste du? (trivia,
-  what is on the ballot tonight). States whose polls close next come first.
+  Delstatsblomst (photo, uncropped at its own aspect) and Visste du? (trivia).
+  Dette valget shows Senate and governor candidates and a compact chip for
+  each House district, with attribution at the bottom of the white panel.
+  Called winners are highlighted with “✓ Vinner”; called House chips show
+  a checkmark and the winning party's colour. These refresh with results,
+  including corrections; counting races do not receive a winner marker.
+  Senate and governor races show both vote shares, a party-coloured bar,
+  and percentage counted. Provisional leaders show “↑ Leder”.
+  Undecided House chips split their
+  background by the two candidates' vote shares. Each chip uses a single
+  line such as “TX-30 40%” or “✓ TX-20 100%”, with a thin count-progress
+  bar along the bottom. Percentages always reflect actual count progress,
+  including called races. Waiting chips show a dash over a striped split;
+  called chips use a solid winning-party colour.
+  Folkevalg appears only for states with ballot measures, two per page;
+  NEXT and automatic rotation walk through all measures before moving on.
+  Measures come from The People's Tally's `meas` field in core.json, with a
+  bundled snapshot in `src/measures.json` and Norwegian editorial summaries.
+  Translations are used only while the original description still matches;
+  new or changed descriptions use the source text until translated.
+  States whose polls close next come first.
   Facts in `src/states.ts`; flags from Wikimedia Commons rasterised into
   `src/flags.json` (Georgia missing, Wikimedia throttled it); outlines from
   `us-atlas` (US Census Bureau); bird and flower photos from each species'

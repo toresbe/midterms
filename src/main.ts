@@ -7,6 +7,8 @@ import { raceAt, tally, partyOf, winnerParty, isFlip, type ChamberTally, type Ra
 import { parseCore, parseResults, type Feed } from './peoplestally';
 import { findPortraits, isWiki } from './portraits';
 import { FACTS, NORWAY_KM2 } from './states';
+import MEASURES from './measures.json';
+import { parseMeasures, measureCategory } from './measures';
 import FLAGS from './flags.json';
 import NATURE_DATA from './nature.json';
 import US from 'us-atlas/states-10m.json';
@@ -49,9 +51,10 @@ const SUBS: Sub[] = ['oversikt', 'jevne', 'skifter'];
 const SUB_LABEL: Record<string, string> = {
   oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
   neste: 'Neste', fakta: 'Fakta', fugl: 'Delstatsfugl', blomst: 'Delstatsblomst', visste: 'Visste du?',
+  valget: 'Dette valget', folkevalg: 'Folkevalg',
 };
 const TAB_SUBS: Record<TabKey, string[]> = {
-  senat: SUBS, huset: SUBS, guv: SUBS, stenger: ['neste'], stater: ['fakta', 'fugl', 'blomst', 'visste'],
+  senat: SUBS, huset: SUBS, guv: SUBS, stenger: ['neste'], stater: ['fakta', 'valget', 'folkevalg', 'fugl', 'blomst', 'visste'],
 };
 const TAB_KEYS = Object.keys(TAB_SUBS) as TabKey[];
 const isContest = (k: TabKey): k is Key => k === 'senat' || k === 'huset' || k === 'guv';
@@ -455,13 +458,6 @@ function ballot(st: string) {
   const house = C.huset.seeds.filter((s) => s.state === st).length;
   return { sen, gov, house };
 }
-const ballotText = (st: string) => {
-  const b = ballot(st);
-  const parts = [b.sen === 2 ? 'to senatsvalg' : b.sen ? 'senatsvalg' : '', b.gov ? 'guvernørvalg' : '', `${b.house} ${b.house === 1 ? 'sete' : 'seter'} i Huset`].filter(Boolean);
-  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} og ${parts.at(-1)}` : parts[0];
-};
-const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
-
 function untilText(h: number) {
   const min = Math.round((h - nightET()) * 60);
   if (min <= 0) return 'stenger nå';
@@ -521,6 +517,11 @@ function silhouette(f: Feature, w: number, h: number) {
 const STATE_ORDER = Object.keys(FACTS);
 let pendingState: string | null = null;
 const shownStates = new Set<string>();
+let activeState: string | null = null;
+let stateMeasures = parseMeasures(MEASURES);
+let measurePage = 0;
+const MEASURES_PER_PAGE = 2;
+const escapeHTML = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 /** Next state for the fact sheets: states whose polls close next go first. */
 function nextState() {
@@ -541,6 +542,8 @@ const nbInt = (n: number) => Math.round(n).toLocaleString('nb-NO').replace(/ /g
 const people = (n: number) => (n >= 1e6 ? `${nb1(n / 1e6)} mill.` : `${nbInt(Math.round(n / 1000) * 1000)}`);
 
 function renderState(st: string) {
+  activeState = st;
+  measurePage = 0;
   const f = FACTS[st];
   const shape = SHAPES.get(st);
   const close = Math.min(...(POLLS.stPolls[st] ?? []).map(([x]) => etClock(x)));
@@ -569,18 +572,72 @@ function renderState(st: string) {
     </div>`;
   extra.stater.visste.innerHTML = `
     <div class="fv">
-      <div class="fv-body">
-        <div class="fv-text">${f.trivia.map((t) => `<p>${t}</p>`).join('')}</div>
-        <div class="fv-side">
-          <div><span class="k">På valg i kveld</span><b>${cap(ballotText(st))}</b></div>
-          <div><span class="k">Største by</span><b>${f.largest}</b></div>
-        </div>
-      </div>
+      <div class="fv-text">${f.trivia.map((t) => `<p>${t}</p>`).join('')}</div>
     </div>`;
+  renderStateElection(st);
+  renderStateMeasures(st);
   extra.stater.fugl.innerHTML = symbolPage(st, 0, 'Delstatsfugl', f.bird);
   extra.stater.blomst.innerHTML = symbolPage(st, 1, 'Delstatsblomst', f.flower);
   const sl = document.getElementById('sublabel');
   if (sl) sl.innerHTML = `${flagImg(st, 'flag')}<span>${STATE_NAME[st]}</span>`;
+}
+
+/** A lead is provisional; only a called race can have a winner. */
+const stateLeader = (race: RaceState): Party | null => race.status === 'counting' && Number.isFinite(race.dem) && race.dem !== 50 ? (race.dem > 50 ? 'D' : 'R') : null;
+const stateReported = (race: RaceState) => Number.isFinite(race.reported) ? Math.min(1, Math.max(0, race.reported)) * 100 : 0;
+const stateHasVotes = (race: RaceState) => race.status !== 'waiting' && Number.isFinite(race.dem);
+const stateShare = (race: RaceState) => stateHasVotes(race) ? Math.min(100, Math.max(0, race.dem)) : 50;
+const statePartyAbbr = (party: Side) => party === 'I' ? 'U' : party;
+
+function renderStateElection(st: string) {
+  const stateRaces = (k: Key): RaceState[] => (prev?.races[k] ?? C[k].seeds.map((seed) => ({ seed, status: 'waiting' as const, reported: 0, dem: 0 }))).filter((r) => r.seed.state === st);
+  const house = stateRaces('huset');
+  const races = (['senat', 'guv'] as Key[]).flatMap((k) => {
+    return stateRaces(k).map((race) => ({ k, race }));
+  });
+  extra.stater.valget.innerHTML = `<div class="state-election">
+    <div class="state-candidates">${races.length ? races.map(({ k, race }) => `<div class="state-race">
+      <div class="k">${k === 'senat' ? 'Senatet' : 'Guvernør'}</div>
+      <div class="state-pair">${(['D', 'R'] as Party[]).map((p) => {
+        const seed = race.seed;
+        const c = seed.cand[p];
+        const party = c?.party ?? p;
+        const called = race.status === 'called' && !!race.winner;
+        const won = called && race.winner === p;
+        const leading = stateLeader(race) === p;
+        return `<div class="state-candidate ${party.toLowerCase()}${won ? ' won' : called ? ' lost' : leading ? ' leading' : ''}"><b>${mode === 'demo' ? 'Kandidatnavn skjult i demo' : c ? escapeHTML(c.name) : seed.unopposed ? 'Ingen motkandidat' : 'Kandidat ikke oppgitt'}</b><span>${c ? escapeHTML(c.label ?? (party === 'I' ? 'Uavhengig' : NAME[party])) : ''}${won ? '<strong class="state-winner">✓ Vinner</strong>' : leading ? '<strong class="state-leader">↑ Leder</strong>' : ''}</span></div>`;
+      }).join('')}</div>
+      <div class="state-vote-numbers num"><b>${stateHasVotes(race) ? pct1(stateShare(race)) : '–'}</b><span>${stateHasVotes(race) && race.reported > 0 ? `${pct0(stateReported(race))} talt` : race.status === 'waiting' ? 'Venter på tall' : 'Andel opptalt ukjent'}</span><b>${stateHasVotes(race) ? pct1(100 - stateShare(race)) : '–'}</b></div>
+      <div class="state-vote-bar${stateHasVotes(race) ? '' : ' waiting'}" style="--share:${stateShare(race)}%;--left:var(--${partyOf(race, 'D').toLowerCase()});--right:var(--${partyOf(race, 'R').toLowerCase()})"></div>
+      </div>`).join('') : ''}</div>
+    <div class="state-house"><div class="k">Representantenes hus</div>
+      <div class="state-house-chips">${house.map((race) => {
+        const won = race.status === 'called' && race.winner;
+        const leader = stateLeader(race);
+        const slot = won || leader;
+        const c = slot ? race.seed.cand[slot] : null;
+        const party = slot ? partyOf(race, slot) : null;
+        const counting = race.status === 'counting' && Number.isFinite(race.dem);
+        const share = counting ? Math.min(100, Math.max(0, race.dem)) : 50;
+        const counted = race.reported > 0 ? `${pct0(stateReported(race))} talt` : '– talt';
+        const name = party ? mode !== 'demo' && c ? c.name : party === 'I' ? 'Uavhengig' : NAME[party] : '';
+        const percent = race.status === 'waiting' || !(race.reported > 0) ? '–' : `${Math.round(stateReported(race))}%`;
+        const label = `${race.seed.id}: ${won ? `${name} vinner` : leader ? `${name} leder` : counting ? 'Likt' : 'Venter på tall'}${counting ? `, ${statePartyAbbr(partyOf(race, 'D'))}: ${pct1(share)}, ${statePartyAbbr(partyOf(race, 'R'))}: ${pct1(100 - share)}, ${counted}` : ''}`;
+        return `<span class="state-house-chip${won ? ` won ${party!.toLowerCase()}` : counting ? ' counting' : ' waiting'}" style="--share:${share}%;--counted:${race.status === 'waiting' ? 0 : stateReported(race)}%;--left:var(--${partyOf(race, 'D').toLowerCase()}-soft);--right:var(--${partyOf(race, 'R').toLowerCase()}-soft)" aria-label="${escapeHTML(label)}" title="${escapeHTML(label)}"><span class="state-chip-text">${won ? '✓ ' : ''}${escapeHTML(race.seed.id)} <b>${percent}</b></span><span class="state-count-progress" aria-hidden="true"></span></span>`;
+      }).join('')}</div>
+    </div>
+    ${pageCredit('Kandidater: The People&rsquo;s Tally / Wikipedia &middot; ✓ Vinner &middot; % og fremdrift = andel opptalt')}
+  </div>`;
+}
+
+function renderStateMeasures(st: string) {
+  const measures = stateMeasures.filter((m) => m.state === st);
+  const pages = Math.ceil(measures.length / MEASURES_PER_PAGE);
+  extra.stater.folkevalg.innerHTML = `<div class="state-measures">
+    <div class="measure-heading"><span>${measures.length} ${measures.length === 1 ? 'folkeavstemning' : 'folkeavstemninger'}</span><span>${pages > 1 ? `${measurePage + 1} / ${pages}` : ''}</span></div>
+    <div class="measure-list">${measures.slice(measurePage * MEASURES_PER_PAGE, (measurePage + 1) * MEASURES_PER_PAGE).map((m) => `<div class="measure"><div class="measure-title"><b>${escapeHTML(m.title)}</b><span>${escapeHTML(measureCategory(m.category))}</span></div><p>${escapeHTML(m.summary)}</p></div>`).join('')}</div>
+    ${pageCredit('Kilde: The People&rsquo;s Tally (CC BY 4.0) / Ballotpedia')}
+  </div>`;
 }
 
 /** Bird and flower photos (Wikimedia Commons, via each species' Wikipedia article), embedded at build time. */
@@ -625,6 +682,7 @@ let auto = q.get('auto') !== '0';
 
 function hasContent(key: TabKey, sub: string): boolean {
   if (key === 'stenger') return closingsLeft();
+  if (key === 'stater' && sub === 'folkevalg') return stateMeasures.some((m) => m.state === activeState);
   if (key === 'stater' || sub !== 'skifter' || !prev) return true;
   return flips(prev.races[key]).length > 0;
 }
@@ -633,6 +691,12 @@ const pageOf = (key: TabKey, sub: string): HTMLElement => (isContest(key) ? view
 
 function go(key: TabKey, sub: string) {
   const was = pageOf(current.key, current.sub);
+  if (key === 'stater' && (current.key !== 'stater' || pendingState)) nextState();
+  if (key === 'stater' && !hasContent(key, sub)) sub = 'valget';
+  if (key === 'stater' && activeState && current.sub !== sub) {
+    measurePage = 0;
+    renderStateMeasures(activeState);
+  }
   const next = pageOf(key, sub);
   // Entering a tab: build its subpage list, and pick the next state for a fact sheet.
   if (key !== current.key || !$('subs').childElementCount) {
@@ -640,7 +704,10 @@ function go(key: TabKey, sub: string) {
     // A tab with a single page needs no page list.
     $('subs').innerHTML = (label !== undefined ? `<span class="sublabel" id="sublabel">${label}</span>` : '') + (TAB_SUBS[key].length < 2 ? '' : TAB_SUBS[key].map((s) => `<span class="sub" data-s="${s}">${SUB_LABEL[s]}<span class="cnt"></span><span class="fill"></span></span>`).join(''));
   }
-  if (key === 'stater' && (current.key !== 'stater' || pendingState)) nextState();
+  if (key === 'stater' && activeState) {
+    $('sublabel').innerHTML = `${flagImg(activeState, 'flag')}<span>${STATE_NAME[activeState]}</span>`;
+    frame.querySelector<HTMLElement>('.sub[data-s="folkevalg"]')!.hidden = !hasContent(key, 'folkevalg');
+  }
   if (key === 'stenger') renderClosings();
   // The race tabs credit their numbers up here; the other pages credit their sources at the foot.
   $('source').hidden = !isContest(key);
@@ -683,6 +750,15 @@ function placeIndicator() {
 document.fonts?.ready.then(placeIndicator);
 
 function advance() {
+  if (current.key === 'stater' && current.sub === 'folkevalg' && activeState) {
+    const count = stateMeasures.filter((m) => m.state === activeState).length;
+    if ((measurePage + 1) * MEASURES_PER_PAGE < count) {
+      measurePage++;
+      renderStateMeasures(activeState);
+      go('stater', 'folkevalg');
+      return;
+    }
+  }
   const seq = TAB_KEYS.flatMap((k) => TAB_SUBS[k].map((s) => [k, s] as [TabKey, string]));
   let i = seq.findIndex(([k, s]) => k === current.key && s === current.sub);
   for (let n = 0; n < seq.length; n++) {
@@ -965,6 +1041,7 @@ function apply(snap: Snapshot) {
 
   const old = prev;
   prev = snap;
+  if (activeState) renderStateElection(activeState);
   for (const c of CONTESTS) {
     const v = views[c.key];
     const rs = snap.races[c.key];
@@ -1130,11 +1207,13 @@ function applyFeed(feed: Feed, quiet = false) {
       return [c.key, base.races[c.key].map((r) => {
         const f = byId.get(r.seed.id);
         if (!f) return r;
-        // core.json brings names (keep the numbers); results.json brings numbers (keep the names).
-        if (f.candidates) return { ...r, seed: { ...r.seed, incumbent: f.incumbent ?? r.seed.incumbent, cand: { ...r.seed.cand, ...f.candidates }, unopposed: f.unopposed } };
+        // Core brings names without results; manual pushes may include both.
+        const seed = f.candidates ? { ...r.seed, incumbent: f.incumbent ?? r.seed.incumbent, cand: { ...r.seed.cand, ...f.candidates }, unopposed: f.unopposed } : r.seed;
+        const named = seed === r.seed ? r : { ...r, seed };
+        if (f.candidates && f.status === 'waiting') return named;
         // State feeds may post test numbers before their polls close; never show those.
-        if (q.get('early') !== '1' && etHours(new Date()) < r.seed.closesET) return r;
-        return { seed: r.seed, reported: f.reported, dem: f.dem, status: f.status, winner: f.winner, calledBy: f.calledBy, src: f.src,
+        if (q.get('early') !== '1' && etHours(new Date()) < seed.closesET) return named;
+        return { seed, reported: f.reported, dem: f.dem, status: f.status, winner: f.winner, calledBy: f.calledBy, src: f.src,
           calledAt: r.calledAt ?? (f.status === 'called' ? Date.now() : undefined) };
       })];
     })) as Record<Key, RaceState[]>,
@@ -1152,7 +1231,18 @@ async function getJSON(path: string) {
   return res.json();
 }
 async function pollCore() {
-  try { applyFeed(parseCore(await getJSON('/data/core.json'))); } catch (e) { console.warn('core.json', e); return; }
+  try {
+    const core = await getJSON('/data/core.json');
+    applyFeed(parseCore(core));
+    if (typeof core.meas === 'string') stateMeasures = parseMeasures(core);
+    if (activeState) {
+      renderStateElection(activeState);
+      const count = stateMeasures.filter((m) => m.state === activeState).length;
+      measurePage = Math.min(measurePage, Math.max(0, Math.ceil(count / MEASURES_PER_PAGE) - 1));
+      renderStateMeasures(activeState);
+      if (current.key === 'stater') go('stater', current.sub);
+    }
+  } catch (e) { console.warn('core.json', e); return; }
   // Congress only has portraits of its members; look the rest up on Wikipedia, Senate and governors first.
   if (!prev || q.get('photos') === '0') return;
   const jobs = (['senat', 'guv', 'huset'] as Key[]).flatMap((k) => prev!.races[k].flatMap((r) =>
