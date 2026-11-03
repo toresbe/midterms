@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="UTF-8" />
+    <title>People's Tally</title>
+    <!--
+      US midterms results board ("Mellomvalg") for a 1280x720 (720p50)
+      CasparCG HTML channel. Fixed pixel layout; any other window scales it.
+
+        PLAY 1-90 [HTML] "http://host/peoples-tally/index.html"   (auto-plays)
+        CG 1-90 NEXT 0                  dismiss card, or next page
+        CG 1-90 INVOKE 0 "huset"        jump to a tab (senat, huset, guv) and hold
+        CG 1-90 UPDATE 0 "<json>"       push results (see README)
+        CG 1-90 STOP 0                  fade out
+
+      Query: t (replay start, ET hours), speed, hold (s per page),
+      view (e.g. huset:jevne), auto=0 (no rotation), autoplay=0.
+    -->
+  </head>
+  <body>
+    <div id="frame"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
