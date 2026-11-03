@@ -358,7 +358,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .flag.big.noflag { width: 96px; }
 .tabs .ind { transition: transform 600ms var(--ease), width 600ms var(--ease), opacity 400ms ease; }
 .sublabel { font-weight: 700; color: var(--ink); padding-top: 2px; }
-.sublabel { display: flex; align-items: center; gap: 8px; }
+.sublabel { display: flex; align-items: baseline; gap: 8px; }
 .sublabel .flag { height: 16px; }
 
 /* State bird / flower */
