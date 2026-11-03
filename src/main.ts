@@ -11,6 +11,7 @@ import MEASURES from './measures.json';
 import { parseMeasures, measureCategory } from './measures';
 import FLAGS from './flags.json';
 import NATURE_DATA from './nature.json';
+import { SYMBOL_HISTORY } from './symbol-history';
 import US from 'us-atlas/states-10m.json';
 import { feature } from 'topojson-client';
 import { geoAlbersUsa, geoCentroid, geoConicEqualArea, geoPath } from 'd3-geo';
@@ -647,6 +648,7 @@ const listStates = (sts: string[]) => (sts.length > 1 ? `${sts.slice(0, -1).join
 function symbolPage(st: string, i: 0 | 1, kicker: string, name: string) {
   const key = NATURE.states[st]?.[i];
   const img = key ? NATURE.img[key] : undefined;
+  const history = SYMBOL_HISTORY[st]?.[i];
   // Other states with the same symbol: the cardinal and the meadowlark are popular.
   const shared = Object.entries(NATURE.states).filter(([s, v]) => s !== st && v[i] === key && FACTS[s]).map(([s]) => STATE_NAME[s]);
   return `
@@ -656,8 +658,11 @@ function symbolPage(st: string, i: 0 | 1, kicker: string, name: string) {
         <div class="k">${kicker}</div>
         <div class="sym-name">${name}</div>
         ${key && !name.toLowerCase().includes(key.toLowerCase()) ? `<div class="sym-sci">${key}</div>` : ''}
-        ${shared.length ? `<p>Også ${kicker.toLowerCase()} i ${listStates(shared)}.</p>` : `<p>Ingen andre delstater har valgt den samme.</p>`}
-        ${img?.uri ? pageCredit('Foto: Wikimedia Commons') : ''}
+        ${history ? `<p class="sym-history">${escapeHTML(history.text)}</p>` : ''}
+        <div class="sym-footer">
+          ${shared.length ? `<p class="sym-shared">Også ${kicker.toLowerCase()} i ${listStates(shared)}.</p>` : ''}
+          ${pageCredit(`${history ? `Historie: <a href="${escapeHTML(history.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(history.source)}</a>` : ''}${img?.uri ? `${history ? ' &middot; ' : ''}Foto: Wikimedia Commons` : ''}`)}
+        </div>
       </div>
     </div>`;
 }

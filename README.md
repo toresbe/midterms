@@ -44,7 +44,8 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
 - **Delstatene:** a fact sheet per visit: Fakta (flag, the state's outline,
   where it is in the US, capital, largest city, 2020 population, area compared
   with mainland Norway, statehood, poll close), Delstatsfugl and
-  Delstatsblomst (photo, uncropped at its own aspect) and Visste du? (trivia).
+  Delstatsblomst (photo, uncropped at its own aspect, with Norwegian histories
+  of each symbol's selection) and Visste du? (trivia).
   Dette valget shows Senate and governor candidates and a compact chip for
   each House district, with attribution at the bottom of the white panel.
   Called winners are highlighted with “✓ Vinner”; called House chips show
@@ -65,7 +66,11 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
   Translations are used only while the original description still matches;
   new or changed descriptions use the source text until translated.
   States whose polls close next come first.
-  Facts in `src/states.ts`; flags from Wikimedia Commons rasterised into
+  Facts in `src/states.ts`; adoption histories and per-entry source links for
+  all 50 states in `src/symbol-history.ts`. School and club polls are distinct
+  from formal adoption; where sources give no rationale, the copy says so.
+  History and photo credits appear together below each symbol's text.
+  Flags from Wikimedia Commons rasterised into
   `src/flags.json` (Georgia missing, Wikimedia throttled it); outlines from
   `us-atlas` (US Census Bureau); bird and flower photos from each species'
   Wikipedia article, packed into `src/nature.json` by `tools/nature`. These
