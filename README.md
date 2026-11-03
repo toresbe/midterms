@@ -4,6 +4,11 @@ US midterms results board in Norwegian for a **1280x720 (720p50) CasparCG
 HTML channel**. Vite + TypeScript, no framework. `npm run build` gives one
 self-contained `dist/index.html` (JS, CSS and fonts inlined).
 
+Text and results use the 90% safe region: **1152 × 648 at (64, 36)** within the
+1280 × 720 frame. Pages use a 334 px content area with four 76 px race rows;
+call sequences fill the space between the notice and the clocks. The notice
+background extends to the top and side edges to sit behind the channel bug.
+
 Three modes:
 - **Waiting (default):** real clocks, real nominees, "Stenger 7:00 PM EST" /
   "Venter på tall" per race. No numbers until results are pushed.
