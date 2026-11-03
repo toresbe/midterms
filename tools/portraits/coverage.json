@@ -1,0 +1,366 @@
+{
+  "source": "https://thepeoplestally.com/data/core.json",
+  "rosterUpdated": "Oct 23, 2026, 1:18 AM ET",
+  "total": 1013,
+  "available": 988,
+  "currentFeed": {
+    "total": 1007,
+    "available": 982
+  },
+  "missing": [
+    {
+      "key": "Tim Bennett|CO",
+      "name": "Tim Bennett",
+      "state": "CO",
+      "races": [
+        "H-CO-07"
+      ],
+      "checkedSources": [
+        "https://timbennettforcongress.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found",
+        "No matching state in profile introduction"
+      ]
+    },
+    {
+      "key": "James Duffie|GA",
+      "name": "James Duffie",
+      "state": "GA",
+      "races": [
+        "H-GA-04"
+      ],
+      "checkedSources": [
+        "https://jimduffie.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Michael Noack|IL",
+      "name": "Michael Noack",
+      "state": "IL",
+      "races": [
+        "H-IL-02"
+      ],
+      "checkedSources": [],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Carl Lambrecht|IL",
+      "name": "Carl Lambrecht",
+      "state": "IL",
+      "races": [
+        "H-IL-10"
+      ],
+      "checkedSources": [],
+      "errors": [
+        "No usable verified portrait found from the checked sources"
+      ]
+    },
+    {
+      "key": "Eric Jenkins|KS",
+      "name": "Eric Jenkins",
+      "state": "KS",
+      "races": [
+        "H-KS-03"
+      ],
+      "checkedSources": [
+        "https://ericjenkinsforkansas.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "George McDermott|MD",
+      "name": "George McDermott",
+      "state": "MD",
+      "races": [
+        "H-MD-04"
+      ],
+      "checkedSources": [
+        "https://www.georgemcdermott.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Scott Collier|MD",
+      "name": "Scott Collier",
+      "state": "MD",
+      "races": [
+        "H-MD-07"
+      ],
+      "checkedSources": [
+        "http://www.scottcollier.org/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Josh Smead|MO",
+      "name": "Josh Smead",
+      "state": "MO",
+      "races": [
+        "H-MO-06"
+      ],
+      "checkedSources": [
+        "https://votesmead.com/"
+      ],
+      "errors": [
+        "No unambiguous single face"
+      ]
+    },
+    {
+      "key": "Damon Galdo|NJ",
+      "name": "Damon Galdo",
+      "state": "NJ",
+      "races": [
+        "H-NJ-01"
+      ],
+      "checkedSources": [
+        "https://votedamongaldo.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found",
+        "No unambiguous single face"
+      ]
+    },
+    {
+      "key": "Michael McGuire|NJ",
+      "name": "Michael McGuire",
+      "state": "NJ",
+      "races": [
+        "H-NJ-03"
+      ],
+      "checkedSources": [
+        "https://michaelmcguireforcongress.com/",
+        "https://michaelmcguireforcongress.com/about/"
+      ],
+      "errors": [
+        "HTTP Error 403: Forbidden."
+      ]
+    },
+    {
+      "key": "Aristotle Eliopoulos|NJ",
+      "name": "Aristotle Eliopoulos",
+      "state": "NJ",
+      "races": [
+        "H-NJ-08"
+      ],
+      "checkedSources": [
+        "https://arieliopoulosforcongress.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Martin Zamora|NM",
+      "name": "Martin Zamora",
+      "state": "NM",
+      "races": [
+        "H-NM-03"
+      ],
+      "checkedSources": [
+        "https://zamorafornewmexico.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found",
+        "HTTP Error 403: Forbidden"
+      ]
+    },
+    {
+      "key": "Joseph Chou|NY",
+      "name": "Joseph Chou",
+      "state": "NY",
+      "races": [
+        "H-NY-06"
+      ],
+      "checkedSources": [
+        "https://josephforny.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Joel Azumah|NY",
+      "name": "Joel Azumah",
+      "state": "NY",
+      "races": [
+        "H-NY-09"
+      ],
+      "checkedSources": [
+        "https://www.joelazumah.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Jomo Williams|NY",
+      "name": "Jomo Williams",
+      "state": "NY",
+      "races": [
+        "H-NY-13"
+      ],
+      "checkedSources": [
+        "https://jmw4congress.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Stylo Sapaskis|NY",
+      "name": "Stylo Sapaskis",
+      "state": "NY",
+      "races": [
+        "H-NY-15"
+      ],
+      "checkedSources": [],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Kailee Buller|NY",
+      "name": "Kailee Buller",
+      "state": "NY",
+      "races": [
+        "H-NY-22"
+      ],
+      "checkedSources": [
+        "https://kaileebuller.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Virginia McIntyre|NY",
+      "name": "Virginia McIntyre",
+      "state": "NY",
+      "races": [
+        "H-NY-25"
+      ],
+      "checkedSources": [
+        "https://virginiamcintyreforcongress.com/"
+      ],
+      "errors": [
+        "Source did not provide a decodable image",
+        "HTTP Error 404: Not Found",
+        "No unambiguous single face"
+      ]
+    },
+    {
+      "key": "Eugene Douglass|NC",
+      "name": "Eugene Douglass",
+      "state": "NC",
+      "races": [
+        "H-NC-02"
+      ],
+      "checkedSources": [
+        "https://www.gdouglass.us/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found",
+        "No unambiguous single face"
+      ]
+    },
+    {
+      "key": "Ashley Bell|NC",
+      "name": "Ashley Bell",
+      "state": "NC",
+      "races": [
+        "H-NC-10"
+      ],
+      "checkedSources": [
+        "https://www.ashleybellforcongress.com/"
+      ],
+      "errors": [
+        "No matching state in profile introduction",
+        "HTTP Error 403: Forbidden"
+      ]
+    },
+    {
+      "key": "Nicholas Manganaro|PA",
+      "name": "Nicholas Manganaro",
+      "state": "PA",
+      "races": [
+        "H-PA-05"
+      ],
+      "checkedSources": [
+        "https://manganaroforcongress.com/"
+      ],
+      "errors": [
+        "Source did not provide a decodable image",
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Ronald Whitfield|TX",
+      "name": "Ronald Whitfield",
+      "state": "TX",
+      "races": [
+        "H-TX-18"
+      ],
+      "checkedSources": [],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Everett Jackson|TX",
+      "name": "Everett Jackson",
+      "state": "TX",
+      "races": [
+        "H-TX-30"
+      ],
+      "checkedSources": [
+        "https://jacksonfortexas.com/"
+      ],
+      "errors": [
+        "No usable verified portrait found from the checked sources"
+      ]
+    },
+    {
+      "key": "Nirav Sheth|WA",
+      "name": "Nirav Sheth",
+      "state": "WA",
+      "races": [
+        "H-WA-07"
+      ],
+      "checkedSources": [
+        "https://shethforcongress.com/"
+      ],
+      "errors": [
+        "HTTP Error 404: Not Found"
+      ]
+    },
+    {
+      "key": "Chris Chung|WA",
+      "name": "Chris Chung",
+      "state": "WA",
+      "races": [
+        "H-WA-10"
+      ],
+      "checkedSources": [
+        "https://insideelections.com/person/chris-chung/",
+        "https://insideelections.com/about/"
+      ],
+      "errors": [
+        "Source did not provide a decodable image",
+        "No matching state in profile introduction",
+        "HTTP Error 404: Not Found"
+      ]
+    }
+  ]
+}

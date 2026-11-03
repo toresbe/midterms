@@ -1,2 +1,17 @@
 node_modules/
 dist/
+tools/portraits/index.json
+tools/portraits/index.tmp
+tools/portraits/summaries.json
+tools/portraits/__pycache__/
+tools/portraits/profile-review-proposals.json
+tools/portraits/profile-reviewed.json
+tools/portraits/hint-reviewed.json
+tools/portraits/campaign-cache/
+tools/portraits/campaign-proposals.json
+tools/portraits/campaign-proposals.tmp
+tools/portraits/campaign-reviewed.json
+tools/portraits/campaign-hint-proposals.json
+tools/portraits/profile-proposals.json
+tools/portraits/campaign-image-hints.json
+tools/portraits/campaign-final-hints.json

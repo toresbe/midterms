@@ -13,6 +13,9 @@ export interface Candidate {
   party?: Side;
   /** Headshot URL, if the feed has one. Without it an initials disc is shown. */
   photo?: string;
+  /** Attribution for embedded or discovered portraits. */
+  photoCredit?: string;
+  photoSource?: string;
 }
 
 export interface RaceSeed {

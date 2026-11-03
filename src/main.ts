@@ -888,8 +888,11 @@ function candidatesStep(r: RaceState): Step {
       <div class="tv num">${pct1(share(p))}</div>
       <div class="tb"><span style="--w:${share(p)}%"></span></div>
     </div>`;
-  const wiki = isWiki(r.seed.cand.D?.photo) || isWiki(r.seed.cand.R?.photo);
-  const credit = [r.calledBy && `Utropt av ${r.calledBy}`, r.src && `Tall: ${r.src}`, wiki && 'Foto: Wikipedia'].filter(Boolean).join(' &middot; ');
+  const photoCredits = [...new Set((['D', 'R'] as Party[]).flatMap((p) => {
+    const c = r.seed.cand[p];
+    return c?.photoCredit ? [c.photoCredit] : isWiki(c?.photo) ? ['Wikipedia / Wikimedia Commons'] : [];
+  }))];
+  const credit = [r.calledBy && `Utropt av ${r.calledBy}`, r.src && `Tall: ${r.src}`, photoCredits.length && `Foto: ${photoCredits.join(', ')}`].filter(Boolean).join(' &middot; ');
   return { ms: 7500, html: `<div class="tcs">${cand(w)}${l === w ? `<div class="tc none"><div class="tn">${NO_CAND}</div></div>` : cand(l)}</div><div class="tfoot num">${pct0(r.reported * 100)} av forventede stemmer er talt${credit ? ` &middot; ${credit}` : ''}</div>` };
 }
 
@@ -1218,6 +1221,7 @@ function applyFeed(feed: Feed, quiet = false) {
       })];
     })) as Record<Key, RaceState[]>,
   });
+  fillPortraits();
 }
 
 const FEED = q.get('feed') ?? 'https://thepeoplestally.com';
@@ -1243,8 +1247,9 @@ async function pollCore() {
       if (current.key === 'stater') go('stater', current.sub);
     }
   } catch (e) { console.warn('core.json', e); return; }
-  // Congress only has portraits of its members; look the rest up on Wikipedia, Senate and governors first.
-  if (!prev || q.get('photos') === '0') return;
+}
+function fillPortraits() {
+  if (!prev || mode === 'demo' || q.get('photos') === '0') return;
   const jobs = (['senat', 'guv', 'huset'] as Key[]).flatMap((k) => prev!.races[k].flatMap((r) =>
     (['D', 'R'] as Party[]).map((p) => r.seed.cand[p]).filter((c): c is Candidate => !!c)
       .map((c) => ({ c, state: STATE_NAME[r.seed.state], statewide: k !== 'huset' }))));
@@ -1283,6 +1288,7 @@ if (mode === 'demo') {
   $('sample').hidden = true;
   $('source').textContent = 'Venter på valgresultater';
   apply(waitingSnapshot());
+  fillPortraits();
 }
 renderClosings();
 const v0 = q.get('view');

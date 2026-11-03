@@ -1,84 +1,113 @@
-/*
- * Portraits for candidates who aren't sitting members of Congress.
- *
- * Congress's own archive (bioguide) only has members, so challengers,
- * governor candidates and newcomers fall back to the lead image of their
- * English Wikipedia article. Lookups run in the browser, a few at a time,
- * and are remembered in localStorage so a restarted template doesn't ask again.
- *
- * A page is only accepted when it is an ordinary article with a photo (not a
- * seal or logo) whose opening text names the candidate's state or the race,
- * so a namesake from elsewhere isn't shown.
- * Images on Wikimedia Commons carry their own licences; the board credits
- * "Foto: Wikipedia" wherever one is on screen.
- */
-import type { Candidate } from './data';
+/** Embedded portraits first, then a bounded, retryable Wikipedia lookup. */
+import { STATE_NAME, type Candidate } from './data';
+import CATALOGUE from './portrait-catalogue.json';
 
-const STORE = 'mellomvalg-portraits-v2';
+type Portrait = { uri: string; source: string; credit: string };
+const catalogue: Record<string, Portrait> = CATALOGUE;
+const STORE = 'mellomvalg-portraits-v3';
 const REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
+type Entry = { url: string | null; until: number };
+let cache: Record<string, Entry> = {};
+try {
+  const stored: unknown = JSON.parse(localStorage.getItem(STORE) ?? '{}');
+  if (stored && typeof stored === 'object') {
+    for (const [key, value] of Object.entries(stored)) {
+      if (value && typeof value.until === 'number' && value.until > Date.now()
+        && (value.url === null || (typeof value.url === 'string' && value.url.startsWith('https://')))) cache[key] = value;
+    }
+  }
+} catch { /* blocked storage or invalid cache */ }
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(cache)); } catch { /* storage full */ } };
 
-let cache: Record<string, string | null> = {};
-try { cache = JSON.parse(localStorage.getItem(STORE) ?? '{}'); } catch { /* private window or blocked storage */ }
-const save = () => { try { localStorage.setItem(STORE, JSON.stringify(cache)); } catch { /* ignore */ } };
-
-const isWiki = (url?: string) => !!url && url.includes('wikimedia.org');
-export { isWiki };
-
-async function summary(title: string): Promise<{ type?: string; extract?: string; thumbnail?: { source: string } } | null> {
-  const timeout = new Promise<never>((_, no) => setTimeout(() => no(new Error('timeout')), 15_000));
-  const res = await Promise.race([fetch(REST + encodeURIComponent(title.replace(/ /g, '_'))), timeout]);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
+export const isWiki = (url?: string) => !!url && /https:\/\/[^/]*wikimedia\.org\//.test(url);
+type Job = { c: Candidate; state: string; statewide: boolean };
+type Pending = { job: Job; candidates: Set<Candidate>; attempts: number };
+const pending = new Map<string, Pending>();
+const queue: string[] = [];
+let running = 0;
+let onFound: () => void = () => {};
+let notify: ReturnType<typeof setTimeout> | undefined;
+const changed = () => { clearTimeout(notify); notify = setTimeout(() => onFound(), 250); };
+const keyFor = (job: Job) => `${job.c.name}|${job.state}`;
+function assign(c: Candidate, url: string, credit = 'Wikipedia / Wikimedia Commons', source?: string) {
+  c.photo = url;
+  c.photoCredit = credit;
+  c.photoSource = source;
 }
 
-async function lookup(name: string, state: string, statewide: boolean): Promise<string | null> {
-  // Most specific title first, so a disambiguated politician wins over a namesake.
-  for (const t of [`${name} (${state} politician)`, `${name} (American politician)`, `${name} (politician)`, name]) {
-    const s = await summary(t);
-    // A photo, not a seal or logo (those are SVG or PNG drawings).
-    if (!s || s.type !== 'standard' || !s.thumbnail || !/\.jpe?g\//i.test(s.thumbnail.source)) continue;
-    // About this candidate, not a namesake: the article names the state or the race.
-    const text = s.extract ?? '';
-    if (text.includes(state) || /candidate|Senate|governor|Congress|House of Representatives/.test(text)) return s.thumbnail.source;
-    // Senate and governor nominees are well known (e.g. a broadcaster turned candidate); an American with that exact name will do.
-    if (statewide && t === name && /^\S.* is an American /.test(text)) return s.thumbnail.source;
+async function summary(title: string): Promise<{ type?: string; title?: string; extract?: string; thumbnail?: { source: string } } | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), 15_000); });
+    const res = await Promise.race([fetch(REST + encodeURIComponent(title.replace(/ /g, '_'))), timeout]);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`${res.status}`);
+    return await res.json();
+  } finally { clearTimeout(timer); }
+}
+
+async function lookup({ c, state }: Job): Promise<string | null> {
+  for (const title of [`${c.name} (${state} politician)`, `${c.name} (American politician)`, `${c.name} (politician)`, c.name]) {
+    const s = await summary(title);
+    if (!s || s.type !== 'standard' || !s.title || !s.thumbnail || !/\.(?:jpe?g|png)(?:\/|$)/i.test(s.thumbnail.source)
+      || /\.svg|seal|logo|flag|coat.of.arms|results.map/i.test(s.thumbnail.source)) continue;
+    const words = (name: string): string[] => name.split(' (')[0].normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z]+/g) ?? [];
+    const name = words(c.name), article = words(s.title);
+    if (name.join(' ') !== article.join(' ') && (name.at(-1) !== article.at(-1)
+      || !name.slice(0, -1).some((word) => word.length > 1 && article.includes(word)))) continue;
+    // An unrelated American or a politician from another state is not a match.
+    if (!(s.extract ?? '').includes(state)) continue;
+    if (!/politic|candidate|senator|governor|representative|congress|attorney|commissioner|mayor/i.test(s.extract ?? '')) continue;
+    return s.thumbnail.source;
   }
   return null;
 }
 
-type Job = { c: Candidate; state: string; statewide: boolean };
-const queue: Job[] = [];
-const seen = new Set<string>();
-let running = 0;
-let onFound: () => void = () => {};
-let notify = 0;
-
 function pump() {
-  while (running < 3 && queue.length) {
-    const job = queue.shift()!;
-    const { c, state } = job;
-    const key = `${c.name}|${state}`;
+  while (running < 2 && queue.length) {
+    const key = queue.shift()!;
+    const work = pending.get(key)!;
     running++;
-    lookup(c.name, state, job.statewide)
-      .then((url) => { cache[key] = url; save(); if (url && !c.photo) { c.photo = url; clearTimeout(notify); notify = window.setTimeout(onFound, 1500); } })
-      // Rate limited or offline: back off, then try this one again later.
-      .then(() => { running--; pump(); }, () => { queue.push(job); setTimeout(() => { running--; pump(); }, 5000); });
+    void lookup(work.job).then((url) => {
+      cache[key] = { url, until: Date.now() + (url ? 7 * 86400_000 : 3600_000) };
+      save();
+      if (url) { for (const c of work.candidates) if (!c.photo) assign(c, url); changed(); }
+      pending.delete(key);
+    }, () => {
+      if (++work.attempts < 3) {
+        setTimeout(() => { queue.push(key); pump(); }, 30_000 * work.attempts);
+      } else {
+        cache[key] = { url: null, until: Date.now() + 5 * 60_000 };
+        pending.delete(key);
+      }
+    }).finally(() => { running--; pump(); });
   }
 }
 
-/** Fill in photos for candidates without one; calls back (debounced) when any arrive. */
+/** Apply bundled photos synchronously; fresh feed objects also join pending lookups. */
 export function findPortraits(jobs: Job[], found: () => void) {
   onFound = found;
   let hit = false;
-  for (const j of jobs) {
-    if (j.c.photo) continue;
-    const key = `${j.c.name}|${j.state}`;
-    if (key in cache) { if (cache[key]) { j.c.photo = cache[key]!; hit = true; } continue; }
-    if (seen.has(key)) continue;
-    seen.add(key);
-    queue.push(j);
+  for (const job of jobs) {
+    const key = keyFor(job);
+    const stateCode = Object.keys(STATE_NAME).find((code) => STATE_NAME[code] === job.state) ?? job.state;
+    const bundled = catalogue[`${job.c.name}|${stateCode}`];
+    // Keep explicit feed photos; replace Congress URLs with their offline copy.
+    if (bundled && (!job.c.photo || job.c.photo.startsWith('https://bioguide.congress.gov/photo/'))) {
+      assign(job.c, bundled.uri, bundled.credit, bundled.source);
+      hit = true;
+    }
+    if (job.c.photo) continue;
+    const cached = cache[key];
+    if (cached && cached.until > Date.now()) {
+      if (cached.url) { assign(job.c, cached.url); hit = true; }
+      continue;
+    }
+    const existing = pending.get(key);
+    if (existing) { existing.candidates.add(job.c); continue; }
+    pending.set(key, { job, candidates: new Set([job.c]), attempts: 0 });
+    queue.push(key);
   }
-  if (hit) found();
+  if (hit) changed();
   pump();
 }
