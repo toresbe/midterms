@@ -100,8 +100,17 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .seg.r { background: var(--r); }
 .seg.rl { background: var(--r-soft); }
 .seg.i { background: var(--i); }
+/* Not decided yet: soft stripes in the colour of the party holding the seat now. */
+.seg.dh, .seg.rh, .seg.ih, .bleg .sw, .bleg .sw::after { background-image: repeating-linear-gradient(45deg, var(--st) 0 6px, transparent 6px 12px); }
+.seg.dh, .bleg .sw { --st: rgba(42, 95, 176, 0.24); }
+.seg.rh, .bleg .sw::after { --st: rgba(195, 55, 45, 0.24); }
+.seg.ih { --st: rgba(108, 102, 132, 0.24); }
+/* Legend under the bar: a swatch, half each party's stripes. */
+.bleg { margin-top: 6px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; height: 18px; }
+.bleg .sw { position: relative; width: 28px; height: 12px; background-color: var(--wait); }
+.bleg .sw::after { content: ''; position: absolute; inset: 0 0 0 50%; background-color: var(--wait); }
 .bar .mark { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); }
-.blk .status { margin-top: 12px; font-size: 19px; color: var(--muted); height: 24px; white-space: nowrap; }
+.blk .status { margin-top: 6px; font-size: 19px; color: var(--muted); height: 24px; white-space: nowrap; }
 .blk .status b { color: var(--ink); font-weight: 600; }
 .blk .status .won { font-weight: 700; font-size: 20px; }
 .blk::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--ctl, transparent); transform: scaleX(var(--ctl-x, 0)); transform-origin: left; transition: transform 900ms var(--ease); }

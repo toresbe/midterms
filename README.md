@@ -28,7 +28,9 @@ feed only.
 
 ## Tabs and pages
 Senatet / Representantenes hus / Guvernører, each with Oversikt, Jevneste løp,
-Skifter parti. Then two tabs for quiet stretches:
+Skifter parti. On Oversikt the seat bar fills from each end with seats won (solid)
+and leading (soft); seats with no numbers yet are softly striped in the colour
+of the party holding them now, with a small legend under the bar. Then two tabs for quiet stretches:
 - **Stengetider:** one page: the next poll closing on top (Oslo and ET time,
   a countdown, and the states with their flags), the rest of the night's
   closings underneath. Times come from The People's Tally (`polls` in

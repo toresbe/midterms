@@ -56,6 +56,8 @@ export interface ChamberTally {
   won: Record<Side, number>;
   leading: Record<Side, number>;
   waiting: number;
+  /** Races with no numbers yet, by the party holding the seat now. */
+  open: Record<Side, number>;
 }
 
 /*
@@ -68,11 +70,11 @@ export const winnerParty = (r: RaceState): Side | undefined => (r.winner ? party
 export const isFlip = (r: RaceState) => r.status === 'called' && winnerParty(r) !== r.seed.incumbent;
 
 export function tally(races: RaceState[]): ChamberTally {
-  const t: ChamberTally = { won: { D: 0, R: 0, I: 0 }, leading: { D: 0, R: 0, I: 0 }, waiting: 0 };
+  const t: ChamberTally = { won: { D: 0, R: 0, I: 0 }, leading: { D: 0, R: 0, I: 0 }, waiting: 0, open: { D: 0, R: 0, I: 0 } };
   for (const r of races) {
     if (r.status === 'called' && r.winner) t.won[winnerParty(r)!]++;
     else if (r.status === 'counting') t.leading[partyOf(r, r.dem >= 50 ? 'D' : 'R')]++;
-    else t.waiting++;
+    else { t.waiting++; t.open[r.seed.incumbent]++; }
   }
   return t;
 }

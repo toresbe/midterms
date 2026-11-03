@@ -205,9 +205,10 @@ for (const c of CONTESTS) {
           <div class="side r"><span class="lab">${NAME.R}</span><span class="n num" data-k="R">0</span></div>
         </div>
         <div class="bar">
-          <span class="seg d"></span><span class="seg dl"></span><span class="seg i"></span><span class="seg rl"></span><span class="seg r"></span>
+          <span class="seg d"></span><span class="seg dl"></span><span class="seg dh"></span><span class="seg i"></span><span class="seg ih"></span><span class="seg rh"></span><span class="seg rl"></span><span class="seg r"></span>
           ${mark !== null ? `<span class="mark" style="left:${mark}%"></span>` : ''}
         </div>
+        <div class="bleg"><i class="sw"></i>Ikke avgjort (farge = parti som har setet nå)</div>
         <div class="status"></div>
       </div>
       <div class="stats">
@@ -235,13 +236,17 @@ function renderOverview(v: View, rs: RaceState[]) {
   countTo(p.querySelector<HTMLElement>('[data-k="flipR"]')!, f.filter((r) => winnerParty(r) === 'R').length);
 
   const w = (n: number) => `${(n / c.total) * 100}%`;
-  const [d, dl, ind, rl, r] = p.querySelectorAll<HTMLElement>('.seg');
-  // Seats won by independents sit between the two parties.
-  ind.style.left = w(s.D + t.leading.D); ind.style.width = w(t.won.I);
+  const [d, dl, dh, ind, ih, rh, rl, r] = p.querySelectorAll<HTMLElement>('.seg');
+  // From each end: won, leading, then (striped) seats with no numbers yet, by who holds them now.
+  // Seats won or held by independents sit between the two parties.
   d.style.left = '0%'; d.style.width = w(s.D);
   dl.style.left = w(s.D); dl.style.width = w(t.leading.D);
+  dh.style.left = w(s.D + t.leading.D); dh.style.width = w(t.open.D);
+  ind.style.left = w(s.D + t.leading.D + t.open.D); ind.style.width = w(t.won.I);
+  ih.style.left = w(s.D + t.leading.D + t.open.D + t.won.I); ih.style.width = w(t.open.I);
   r.style.left = `calc(100% - ${w(s.R)})`; r.style.width = w(s.R);
   rl.style.left = `calc(100% - ${w(s.R + t.leading.R)})`; rl.style.width = w(t.leading.R);
+  rh.style.left = `calc(100% - ${w(s.R + t.leading.R + t.open.R)})`; rh.style.width = w(t.open.R);
 
   const status = p.querySelector('.status')!;
   const blk = p.querySelector<HTMLElement>('.blk')!;
@@ -776,7 +781,12 @@ function impactStep(c: Contest, focus: Party | null): Step {
         </div>
         <div class="bar ibar">
           <span class="seg d" style="left:0;--w:${w(s.D)}"></span>
-          <span class="seg i" style="left:${w(s.D)};--w:${w(t.won.I)}"></span>
+          <span class="seg dl" style="left:${w(s.D)};--w:${w(t.leading.D)}"></span>
+          <span class="seg dh" style="left:${w(s.D + t.leading.D)};--w:${w(t.open.D)}"></span>
+          <span class="seg i" style="left:${w(s.D + t.leading.D + t.open.D)};--w:${w(t.won.I)}"></span>
+          <span class="seg ih" style="left:${w(s.D + t.leading.D + t.open.D + t.won.I)};--w:${w(t.open.I)}"></span>
+          <span class="seg rh" style="right:${w(s.R + t.leading.R)};--w:${w(t.open.R)}"></span>
+          <span class="seg rl" style="right:${w(s.R)};--w:${w(t.leading.R)}"></span>
           <span class="seg r" style="right:0;--w:${w(s.R)}"></span>
           ${mark !== null ? `<span class="mark" style="left:${mark}%"></span>` : ''}
         </div>
