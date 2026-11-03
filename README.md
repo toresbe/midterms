@@ -94,8 +94,11 @@ By default the template reads The People's Tally open data itself
 - `/data/core.json`, at start and every 10 min: candidates per race. One
   Democrat and one Republican per race; where there is no Democrat, the
   strongest other candidate takes that side with their own label (e.g.
-  "Uavhengig"). Sitting members get their official congress portrait (from
-  the bioguide ID in the file); everyone else shows initials.
+  "Uavhengig"). Candidate portraits are embedded in
+  `src/portrait-catalogue.json`, keyed by name and state. Sources include
+  Congress, campaigns, government biographies, candidate profiles, and news
+  coverage. The bundled photos also work offline. Missing photos use a
+  bounded Wikipedia lookup, with initials as the fallback.
 - `/data/results.json`, every 30 s: votes per candidate become two-party
   shares, `votes / exp` the share counted, a `winner` flag a call. The call
   screen names who called it (`called_by`) and the source (`src`).
@@ -106,6 +109,15 @@ By default the template reads The People's Tally open data itself
   if the feed has been quiet for 5 minutes.
 - The core.json line format is undocumented; it was read from the data.
   The CasparCG browser does not enforce CORS, so it can fetch the files directly.
+
+The portrait audit in `tools/portraits/coverage.json` lists every displayed
+candidate without a bundled photo. It covers the two slots selected by the
+app per race, plus the offline statewide nominees. Bundled photos are applied
+on startup and after both feed and manual updates. Discovered photos survive
+replacement feed objects; unsuccessful lookups expire. Demo mode continues
+to hide candidates. Source links, credits, reviewed crops, and image
+fingerprints are recorded in `tools/portraits/campaign-sources.json` for the
+additional portraits. See `tools/README.md` for the refresh workflow.
 
 ## Pushing results by hand (optional)
 
