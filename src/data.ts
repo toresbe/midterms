@@ -32,6 +32,8 @@ export interface RaceSeed {
   skew: number;
   /** Nominees; null where unknown (House names come from the feed). */
   cand: Record<Party, Candidate | null>;
+  /** Set once core.json lists only one candidate: the slot that has one (the other side is unopposed). */
+  unopposed?: Party;
 }
 
 import CANDIDATES from './candidates.json';

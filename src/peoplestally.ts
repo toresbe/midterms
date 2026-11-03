@@ -29,6 +29,8 @@ export interface FeedRace {
   candidates?: Partial<Record<Party, Candidate>>;
   /** Party holding the seat now, from core.json. */
   incumbent?: Side;
+  /** Only one candidate on the ballot: the slot they fill. */
+  unopposed?: Party;
 }
 export type Feed = Partial<Record<Kind, FeedRace[]>>;
 
@@ -73,7 +75,8 @@ function slots<T extends { party: string; incumbent?: boolean }>(cands: T[], ran
   const D = best((c) => c.party === 'D') ?? best((c) => c.party === 'I') ?? best((c) => c.party !== 'R');
   // No Republican (e.g. two Democrats in a California top-two race): the strongest other candidate.
   const R = best((c) => c.party === 'R') ?? best((c) => c !== D);
-  return { D, R };
+  // Two Republicans (e.g. California's 40th): the second one takes the left slot.
+  return { D: D ?? best((c) => c !== R), R };
 }
 
 const side = (party: string): Side => (party === 'D' || party === 'R' ? party : 'I');
@@ -98,8 +101,9 @@ export function parseCore(core: { races?: string }): Feed {
           : { name: c.name, photo: portrait(c.bioguide), party: side(c.party), label: LABEL[c.party] ?? PARTY_LABEL[c.party] ?? c.party };
       }
     }
+    const filled = (['D', 'R'] as Party[]).filter((p) => candidates[p]);
     (out[where.kind] ??= []).push({ id: where.id, reported: 0, dem: 50, status: 'waiting', candidates,
-      incumbent: /^[A-Z]+$/.test(f[3]) ? side(f[3]) : undefined });
+      incumbent: /^[A-Z]+$/.test(f[3]) ? side(f[3]) : undefined, unopposed: filled.length === 1 ? filled[0] : undefined });
   }
   return out;
 }

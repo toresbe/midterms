@@ -289,6 +289,11 @@ function photo(c: Candidate | null, p: Party, cls = '', party: Side = p) {
 }
 const surname = (c: Candidate | null, p: Party) =>
   c ? c.name.replace(/\s+(Jr\.?|Sr\.?|II|III|IV)$/, '').split(/\s+/).slice(-1)[0] : `${ABBR[p]} kandidat`;
+/** No one on the ballot in this slot (known from core.json, so never in demo mode). */
+const noCand = (r: RaceState, p: Party) => mode !== 'demo' && !!r.seed.unopposed && r.seed.unopposed !== p;
+const NO_CAND = 'Uten motkandidat';
+const slotPhoto = (r: RaceState, p: Party) => (noCand(r, p) ? `<span class="ph none" data-slot="${p}"></span>` : photo(who(r, p), p, '', partyOf(r, p)));
+const slotName = (r: RaceState, p: Party) => (noCand(r, p) ? NO_CAND : surname(who(r, p), p));
 
 /** Hours after midnight ET on election day, for a real moment. */
 const etHours = (d: Date) => (d.getTime() - Date.UTC(2026, 10, 3, 5, 0)) / 3600e3;
@@ -322,12 +327,13 @@ function rowFor(v: View, r: RaceState): HTMLElement {
 
 function paintRow(el: HTMLElement, r: RaceState) {
   // Names and photos can arrive after the row was built (core.json loads in the background).
-  const ck = JSON.stringify([who(r, 'D'), who(r, 'R')]);
+  const ck = JSON.stringify([who(r, 'D'), who(r, 'R'), r.seed.unopposed]);
   if (el.dataset.cand !== ck) {
     el.dataset.cand = ck;
     for (const p of ['D', 'R'] as Party[]) {
-      el.querySelector(`.ph[data-slot="${p}"]`)!.outerHTML = photo(who(r, p), p, '', partyOf(r, p));
-      el.querySelector(`.cn.${p.toLowerCase()} .who`)!.textContent = surname(who(r, p), p);
+      el.querySelector(`.ph[data-slot="${p}"]`)!.outerHTML = slotPhoto(r, p);
+      el.querySelector(`.cn.${p.toLowerCase()} .who`)!.textContent = slotName(r, p);
+      el.querySelector(`.cn.${p.toLowerCase()}`)!.classList.toggle('none', noCand(r, p));
     }
     // Each side in its own party's colour; two from the same party: the right one lighter.
     const same = partyOf(r, 'D') === partyOf(r, 'R');
@@ -781,8 +787,10 @@ function impactStep(c: Contest, focus: Party | null): Step {
 
 function candidatesStep(r: RaceState): Step {
   const w = r.winner!;
-  const l: Party = w === 'D' ? 'R' : 'D';
+  let l: Party = w === 'D' ? 'R' : 'D';
   const share = (p: Party) => (p === 'D' ? r.dem : 100 - r.dem);
+  // Unopposed: only the winner is on the ballot.
+  if (r.seed.unopposed) l = w;
   const cand = (p: Party) => `
     <div class="tc ${p === w ? 'win' : 'lose'} ${col(r, p)}">
       ${photo(who(r, p), p, 'big', partyOf(r, p))}
@@ -793,7 +801,7 @@ function candidatesStep(r: RaceState): Step {
     </div>`;
   const wiki = isWiki(r.seed.cand.D?.photo) || isWiki(r.seed.cand.R?.photo);
   const credit = [r.calledBy && `Utropt av ${r.calledBy}`, r.src && `Tall: ${r.src}`, wiki && 'Foto: Wikipedia'].filter(Boolean).join(' &middot; ');
-  return { ms: 7500, html: `<div class="tcs">${cand(w)}${cand(l)}</div><div class="tfoot num">${pct0(r.reported * 100)} av forventede stemmer er talt${credit ? ` &middot; ${credit}` : ''}</div>` };
+  return { ms: 7500, html: `<div class="tcs">${cand(w)}${l === w ? `<div class="tc none"><div class="tn">${NO_CAND}</div></div>` : cand(l)}</div><div class="tfoot num">${pct0(r.reported * 100)} av forventede stemmer er talt${credit ? ` &middot; ${credit}` : ''}</div>` };
 }
 
 function tilesStep(races: RaceState[]): Step {
@@ -822,7 +830,9 @@ function sequenceFor(c: Card): Sequence {
       colour: `var(--${col(r, w)})`,
       kicker: `${c.c.tab} &middot; avgjort${flip ? ' <span class="tagflip">Skifte</span>' : ''}`,
       title: r.seed.name,
-      verdict: sameParty && wn
+      verdict: r.seed.unopposed && !noCand(r, w)
+        ? `${wn?.name ?? sideName(r, w)} vinner uten motkandidat`
+        : sameParty && wn
         ? `${wn.name} vinner. ${NAME[wp as Party] ?? ''} beholder ${seat}`
         : flip ? `${sideName(r, w)} vinner ${seat} fra ${FROM[r.seed.incumbent]}` : `${sideName(r, w)} beholder ${seat}`,
       openMs: 5000,
@@ -1108,7 +1118,7 @@ function applyFeed(feed: Feed, quiet = false) {
         const f = byId.get(r.seed.id);
         if (!f) return r;
         // core.json brings names (keep the numbers); results.json brings numbers (keep the names).
-        if (f.candidates) return { ...r, seed: { ...r.seed, incumbent: f.incumbent ?? r.seed.incumbent, cand: { ...r.seed.cand, ...f.candidates } } };
+        if (f.candidates) return { ...r, seed: { ...r.seed, incumbent: f.incumbent ?? r.seed.incumbent, cand: { ...r.seed.cand, ...f.candidates }, unopposed: f.unopposed } };
         // State feeds may post test numbers before their polls close; never show those.
         if (q.get('early') !== '1' && etHours(new Date()) < r.seed.closesET) return r;
         return { seed: r.seed, reported: f.reported, dem: f.dem, status: f.status, winner: f.winner, calledBy: f.calledBy, src: f.src,
