@@ -45,10 +45,10 @@ type Sub = 'oversikt' | 'jevne' | 'skifter';
 const SUBS: Sub[] = ['oversikt', 'jevne', 'skifter'];
 const SUB_LABEL: Record<string, string> = {
   oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
-  neste: 'Neste', kvelden: 'Hele kvelden', fakta: 'Fakta', fugl: 'Delstatsfugl', blomst: 'Delstatsblomst', visste: 'Visste du?',
+  neste: 'Neste', fakta: 'Fakta', fugl: 'Delstatsfugl', blomst: 'Delstatsblomst', visste: 'Visste du?',
 };
 const TAB_SUBS: Record<TabKey, string[]> = {
-  senat: SUBS, huset: SUBS, guv: SUBS, stenger: ['neste', 'kvelden'], stater: ['fakta', 'fugl', 'blomst', 'visste'],
+  senat: SUBS, huset: SUBS, guv: SUBS, stenger: ['neste'], stater: ['fakta', 'fugl', 'blomst', 'visste'],
 };
 const TAB_KEYS = Object.keys(TAB_SUBS) as TabKey[];
 const isContest = (k: TabKey): k is Key => k === 'senat' || k === 'huset' || k === 'guv';
@@ -107,7 +107,7 @@ frame.innerHTML = `
   </header>
   <div class="subnav" id="subnav">
     <div class="subs" id="subs"></div>
-    <div class="credit"><span class="sample" id="sample">Eksempeldata</span><span id="source">Oppdiktede tall og kandidater</span><span id="pagecredit" hidden></span></div>
+    <div class="credit"><span class="sample" id="sample">Eksempeldata</span><span id="source">Oppdiktede tall og kandidater</span></div>
   </div>
   <div class="pages" id="pages"></div>
   <div class="latest" id="latest"></div>
@@ -454,38 +454,39 @@ function untilText(h: number) {
   return `om ${min >= 60 ? `${Math.floor(min / 60)} t ` : ''}${min % 60} min`;
 }
 
+/** Credit line at the foot of a page. */
+const pageCredit = (t: string) => `<div class="pcredit">${t}</div>`;
+
+/** Poll closings on one page: the next closing on top, the rest of the night underneath. */
 function renderClosings() {
   const all = closings();
   const now = nightET();
   const next = all.find((c) => c.et > now);
-  const neste = extra.stenger.neste;
-  if (next) {
-    const sts = next.states;
-    const uniq = [...new Set(sts.map((s) => s.st))];
-    const sen = uniq.reduce((a, s) => a + ballot(s).sen, 0);
-    const gov = uniq.filter((s) => ballot(s).gov).length;
-    const house = uniq.reduce((a, s) => a + ballot(s).house, 0);
-    neste.innerHTML = `
+  const page = extra.stenger.neste;
+  if (!next) { page.innerHTML = `<div class="empty">Alle valglokaler er stengt.</div>`; return; }
+  const sts = next.states;
+  const uniq = [...new Set(sts.map((s) => s.st))];
+  const sen = uniq.reduce((a, s) => a + ballot(s).sen, 0);
+  const gov = uniq.filter((s) => ballot(s).gov).length;
+  const house = uniq.reduce((a, s) => a + ballot(s).house, 0);
+  const many = sts.length > 12;
+  const later = all.filter((c) => c.et > next.et);
+  page.innerHTML = `
+    <div class="cl">
       <div class="cl-head">
         <span class="cl-when num">${osloFmt.format(etDate(next.et))}</span>
         <span class="cl-et">${etFmt.format(etDate(next.et))} ${abbr('America/New_York', etDate(next.et))}</span>
         <span class="cl-in">${untilText(next.et)}</span>
         <span class="cl-sum">${sts.length} ${sts.length === 1 ? 'delstat' : 'delstater'}${sen ? ` &middot; ${sen} senatsvalg` : ''}${gov ? ` &middot; ${gov} guvernørvalg` : ''} &middot; ${house} husseter</span>
       </div>
-      <div class="cl-grid${sts.length > 12 ? ' many' : ''}">
-        ${sts.map((s) => `<div class="chip">${flagImg(s.st)}<span class="n">${STATE_NAME[s.st]}</span>${s.note ? `<span class="pt">${partNote(s.note)}</span>` : ''}</div>`).join('')}
-      </div>`;
-  } else {
-    neste.innerHTML = `<div class="empty">Alle valglokaler er stengt.</div>`;
-  }
-  extra.stenger.kvelden.innerHTML = `
-    <div class="tline">
-      ${all.map((c) => `
-        <div class="tlc ${c.et <= now ? 'done' : c === next ? 'next' : ''}">
-          <b class="num">${osloFmt.format(etDate(c.et))}</b>
-          <span class="et">${c.label.replace(':00', '')} ET</span>
-          <span class="sts">${c.states.map((s) => s.st + (s.note ? '*' : '')).join(' ')}</span>
-        </div>`).join('')}
+      <div class="cl-grid${many ? ' many' : ''}">
+        ${sts.map((s) => `<div class="chip">${flagImg(s.st)}<span class="n">${STATE_NAME[s.st]}${s.note && many ? '*' : ''}</span>${s.note && !many ? `<span class="pt">${partNote(s.note)}</span>` : ''}</div>`).join('')}
+      </div>
+      ${later.length ? `<div class="cl-later">
+        <span class="k">Senere</span>
+        ${later.map((c) => `<div class="tlc" style="flex-grow:${Math.max(3, c.states.length)}"><b class="num">${osloFmt.format(etDate(c.et))}</b><span class="sts">${c.states.map((s) => s.st + (s.note ? '*' : '')).join(' ')}</span></div>`).join('')}
+      </div>` : ''}
+      ${pageCredit('Norsk tid &middot; * delvis (flere tidssoner) &middot; Kilde: The People&rsquo;s Tally')}
     </div>`;
 }
 
@@ -545,6 +546,7 @@ function renderState(st: string) {
           <div><span class="k">Delstat siden</span><b class="num">${f.joined}</b><small>som nr. ${f.order}</small></div>
           <div><span class="k">Valglokalene stenger</span><b class="num">${Number.isFinite(close) ? osloFmt.format(etDate(close)) : '&ndash;'}</b><small>norsk tid</small></div>
         </div>
+        ${pageCredit('Kart: US Census Bureau &middot; Flagg: Wikimedia Commons')}
       </div>
       <div class="fs-loc"><svg viewBox="0 0 200 128">
         ${[...SHAPES].map(([a, s]) => `<path class="${a === st ? 'on' : ''}" d="${loc(s) ?? ''}"/>`).join('')}
@@ -553,7 +555,6 @@ function renderState(st: string) {
     </div>`;
   extra.stater.visste.innerHTML = `
     <div class="fv">
-      <div class="fv-head">${flagImg(st, 'flag')}<span>${STATE_NAME[st]}</span></div>
       <div class="fv-body">
         <div class="fv-text">${f.trivia.map((t) => `<p>${t}</p>`).join('')}</div>
         <div class="fv-side">
@@ -585,6 +586,7 @@ function symbolPage(st: string, i: 0 | 1, kicker: string, name: string) {
         <div class="sym-name">${name}</div>
         ${key && !name.toLowerCase().includes(key.toLowerCase()) ? `<div class="sym-sci">${key}</div>` : ''}
         ${shared.length ? `<p>Også ${kicker.toLowerCase()} i ${listStates(shared)}.</p>` : `<p>Ingen andre delstater har valgt den samme.</p>`}
+        ${img?.uri ? pageCredit('Foto: Wikimedia Commons') : ''}
       </div>
     </div>`;
 }
@@ -621,16 +623,14 @@ function go(key: TabKey, sub: string) {
   // Entering a tab: build its subpage list, and pick the next state for a fact sheet.
   if (key !== current.key || !$('subs').childElementCount) {
     const label = { stenger: 'Stengetider', stater: '' }[key as 'stenger' | 'stater'];
-    $('subs').innerHTML = (label !== undefined ? `<span class="sublabel" id="sublabel">${label}</span>` : '') + TAB_SUBS[key].map((s) => `<span class="sub" data-s="${s}">${SUB_LABEL[s]}<span class="cnt"></span><span class="fill"></span></span>`).join('');
+    // A tab with a single page needs no page list.
+    $('subs').innerHTML = (label !== undefined ? `<span class="sublabel" id="sublabel">${label}</span>` : '') + (TAB_SUBS[key].length < 2 ? '' : TAB_SUBS[key].map((s) => `<span class="sub" data-s="${s}">${SUB_LABEL[s]}<span class="cnt"></span><span class="fill"></span></span>`).join(''));
   }
   if (key === 'stater' && (current.key !== 'stater' || pendingState)) nextState();
   if (key === 'stenger') renderClosings();
-  // Credit what the page shows: results on the race tabs, the sources on the others.
-  const pc = { stenger: 'Norsk tid \u00b7 * delvis (flere tidssoner) \u00b7 Kilde: The People\u2019s Tally', stater: 'Kart: US Census Bureau \u00b7 Flagg og foto: Wikimedia Commons' }[key as 'stenger' | 'stater'];
-  $('source').hidden = !!pc;
-  $('sample').hidden = !!pc || mode !== 'demo';
-  $('pagecredit').hidden = !pc;
-  $('pagecredit').textContent = pc ?? '';
+  // The race tabs credit their numbers up here; the other pages credit their sources at the foot.
+  $('source').hidden = !isContest(key);
+  $('sample').hidden = !isContest(key) || mode !== 'demo';
   if (was !== next) {
     was.classList.remove('on');
     was.classList.add('past');

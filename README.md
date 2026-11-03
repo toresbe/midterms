@@ -29,18 +29,21 @@ feed only.
 ## Tabs and pages
 Senatet / Representantenes hus / Guvernører, each with Oversikt, Jevneste løp,
 Skifter parti. Then two tabs for quiet stretches:
-- **Stengetider:** Neste (the next poll closing in Oslo and ET time, a
-  countdown, and the states with their flags) and Hele kvelden (every closing
-  time, done ones greyed). Times come from The People's Tally (`polls` in
+- **Stengetider:** one page: the next poll closing on top (Oslo and ET time,
+  a countdown, and the states with their flags), the rest of the night's
+  closings underneath. Times come from The People's Tally (`polls` in
   core.json, refreshed with it; snapshot in `src/polls.json`). The tab hides
   itself after the last close (1 AM ET, 07:00 Oslo).
 - **Delstatene:** a fact sheet per visit: Fakta (flag, the state's outline,
   where it is in the US, capital, largest city, 2020 population, area compared
-  with mainland Norway, statehood, poll close) and Visste du? (trivia, state
-  bird and flower, what is on the ballot tonight). States whose polls close
-  next come first. Facts in `src/states.ts`; flags from Wikimedia Commons
-  rasterised into `src/flags.json` (Georgia missing, Wikimedia throttled it);
-  outlines from `us-atlas` (US Census Bureau).
+  with mainland Norway, statehood, poll close), Delstatsfugl and
+  Delstatsblomst (photo, uncropped at its own aspect) and Visste du? (trivia,
+  what is on the ballot tonight). States whose polls close next come first.
+  Facts in `src/states.ts`; flags from Wikimedia Commons rasterised into
+  `src/flags.json` (Georgia missing, Wikimedia throttled it); outlines from
+  `us-atlas` (US Census Bureau); bird and flower photos from each species'
+  Wikipedia article, packed into `src/nature.json` by `tools/nature`. These
+  pages credit their sources at the foot of the page, not in the subnav.
 
 Rotates every `hold` seconds (default 9); "Skifter parti" is skipped while
 empty. Calls interrupt any tab.

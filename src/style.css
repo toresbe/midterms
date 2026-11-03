@@ -247,30 +247,32 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .subs { display: flex; gap: 28px; }
 
 /* Poll closings: next closing */
-.cl-head { display: flex; align-items: baseline; gap: 16px; height: 52px; }
+.cl { display: flex; flex-direction: column; height: 266px; }
+.cl-head { display: flex; align-items: baseline; gap: 16px; height: 46px; flex: none; }
 .cl-when { font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
 .cl-et { font-size: 20px; color: var(--muted); font-weight: 500; }
 .cl-in { font-size: 20px; font-weight: 700; background: var(--ink); color: #fff; padding: 2px 10px; align-self: center; }
 .cl-sum { margin-left: auto; font-size: 18px; color: var(--muted); }
-.cl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
-.chip { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; background: var(--panel); font-size: 19px; font-weight: 600; white-space: nowrap; overflow: hidden; }
-.cl-grid.many { row-gap: 6px; }
-.cl-grid.many .chip { height: 36px; font-size: 17px; }
+.cl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.chip { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px; background: var(--panel); font-size: 19px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.cl-grid.many { grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.cl-grid.many .chip { height: 26px; gap: 7px; padding: 0 8px; font-size: 15px; }
 .chip .pt { font-size: 14px; font-weight: 500; color: var(--muted); }
 .flag { height: 22px; width: auto; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12); flex: none; }
-.cl-grid.many .flag { height: 18px; }
+.cl-grid.many .flag { height: 14px; }
 .noflag { display: inline-block; width: 33px; background: var(--wait); }
 
-/* Poll closings: the whole evening */
-.tline { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; height: 266px; }
-.tlc { background: var(--panel); padding: 12px 10px; display: flex; flex-direction: column; gap: 4px; transition: background 600ms ease, color 600ms ease; }
-.tlc b { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
-.tlc .et { font-size: 14px; color: var(--muted); }
-.tlc .sts { margin-top: 6px; font-size: 14px; font-weight: 600; line-height: 1.4; }
-.tlc.done { background: transparent; color: var(--faint); box-shadow: inset 0 0 0 1px var(--rule); }
-.tlc.done .et { color: var(--faint); }
-.tlc.next { background: var(--ink); color: #fff; }
-.tlc.next .et { color: rgba(255, 255, 255, 0.7); }
+/* Poll closings: the rest of the night, under the next closing */
+/* Each later closing is as wide as its list of states, so the lists wrap evenly. */
+.cl-later { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; }
+.cl-later .k { font-size: 14px; color: var(--muted); letter-spacing: 0.02em; padding-right: 6px; align-self: center; }
+.tlc { flex: 1 1 0; min-width: 78px; max-width: 340px; background: var(--panel); padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; min-height: 62px; }
+.tlc b { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.tlc .sts { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--muted); }
+
+/* Source credits at the foot of the closing and state pages */
+.pcredit { font-size: 14px; color: var(--muted); margin-top: auto; padding-top: 6px; white-space: nowrap; }
+.cl-later + .pcredit { margin-top: 0; }
 
 /* State fact sheet */
 .fs { display: grid; grid-template-columns: 250px 1fr 200px; gap: 28px; height: 266px; }
@@ -295,30 +297,30 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .fs-loc circle { fill: none; stroke: var(--flip); stroke-width: 2.5; }
 
 /* State fact sheet: trivia */
-.fv-head { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 700; height: 44px; }
-.fv-head .flag { height: 30px; }
-.fv-body { display: grid; grid-template-columns: 1fr 300px; gap: 28px; margin-top: 12px; }
-.fv-text { background: var(--panel); padding: 18px 22px; min-height: 196px; }
+.fv-body { display: grid; grid-template-columns: 1fr 300px; gap: 28px; height: 266px; }
+.fv-text { background: var(--panel); padding: 18px 22px; }
 .fv-text p { margin: 0 0 10px; font-size: 23px; line-height: 1.35; text-wrap: pretty; }
 .fv-text p:last-child { margin-bottom: 0; }
 .fv-text p + p { font-size: 20px; color: var(--muted); }
 .fv-side { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
 .fv-side b { font-size: 21px; font-weight: 600; line-height: 1.25; }
 .flag.big.noflag { width: 96px; }
-.fv-head .noflag { width: 45px; }
 .tabs .ind { transition: transform 600ms var(--ease), width 600ms var(--ease), opacity 400ms ease; }
 .sublabel { font-weight: 700; color: var(--ink); padding-top: 2px; }
 .sublabel { display: flex; align-items: center; gap: 8px; }
 .sublabel .flag { height: 16px; }
 
 /* State bird / flower */
-.sym { display: grid; grid-template-columns: 400px 1fr; gap: 32px; height: 266px; }
-.sym-img { background: var(--panel); overflow: hidden; }
-.sym-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.page.on .sym-img img { animation: sym-in 9s linear both; }
-@keyframes sym-in { from { transform: scale(1.06); } to { transform: scale(1); } }
+/* The photo keeps its own aspect: never cropped, never scaled past its box. */
+.sym { display: grid; grid-template-columns: auto 1fr; gap: 32px; height: 266px; }
+.sym-img { display: flex; align-items: flex-start; }
+.sym-img img { height: 266px; width: auto; max-width: 560px; object-fit: contain; object-position: left top; display: block; }
+.page.on .sym-img img { animation: sym-in 600ms ease both 150ms; }
+@keyframes sym-in { from { opacity: 0; } to { opacity: 1; } }
 .sym-text { display: flex; flex-direction: column; padding-top: 6px; }
 .sym-text .k { font-size: 16px; color: var(--muted); letter-spacing: 0.02em; }
 .sym-name { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 4px; text-wrap: balance; }
 .sym-sci { font-size: 19px; color: var(--muted); font-style: italic; margin-top: 6px; }
-.sym-text p { margin: auto 0 0; font-size: 21px; line-height: 1.35; text-wrap: pretty; }
+.sym-text p { margin: auto 0 4px; font-size: 21px; line-height: 1.35; text-wrap: pretty; }
+.fs-main { display: flex; flex-direction: column; }
+.sym-text .pcredit { margin-top: 0; }
