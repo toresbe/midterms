@@ -934,6 +934,7 @@ interface Sequence {
   kicker: string;
   title: string;
   verdict: string;
+  winner?: { candidate: Candidate; slot: Party; party: Side };
   long?: boolean;
   steps: Step[]; // after the opening announcement
   openMs: number;
@@ -1019,6 +1020,34 @@ function tilesStep(races: RaceState[]): Step {
   };
 }
 
+/** Six House winners per page keep portraits and full names legible on air. */
+function houseWinnersSteps(races: RaceState[]): Step[] {
+  const shown = races.slice(0, 16);
+  const steps: Step[] = [];
+  for (let start = 0; start < shown.length; start += 6) {
+    const page = shown.slice(start, start + 6);
+    const credits = [...new Set(page.flatMap((r) => {
+      const candidate = who(r, r.winner!);
+      return candidate?.photoCredit ? [candidate.photoCredit] : isWiki(candidate?.photo) ? ['Wikipedia / Wikimedia Commons'] : [];
+    }))];
+    steps.push({
+      ms: 6500,
+      html: `<div class="tiles house-winners">${page.map((r, i) => {
+        const w = r.winner!;
+        const candidate = who(r, w);
+        return `<div class="tile ${col(r, w)}" style="transition-delay:${200 + i * 90}ms">
+          ${photo(candidate, w, '', partyOf(r, w))}
+          <div class="winner-details">
+            <div class="winner-heading"><b class="district">${escapeHTML(r.seed.id)}</b><span>✓ Vinner${isFlip(r) ? ' · skifte' : ''}</span></div>
+            <b class="winner-name">${escapeHTML(candidate?.name ?? sideName(r, w))}</b>
+          </div>
+        </div>`;
+      }).join('')}</div><div class="tfoot">${start + 1}–${start + page.length} av ${races.length} avgjorte løp${credits.length ? ` · Foto: ${escapeHTML(credits.join(', '))}` : ''}</div>`,
+    });
+  }
+  return steps;
+}
+
 function sequenceFor(c: Card): Sequence {
   if (c.kind === 'call' || c.kind === 'callband') {
     const r = c.race;
@@ -1033,6 +1062,7 @@ function sequenceFor(c: Card): Sequence {
       colour: `var(--${col(r, w)})`,
       kicker: `${c.c.tab} &middot; avgjort${flip ? ' <span class="tagflip">Skifte</span>' : ''}`,
       title: r.seed.name,
+      winner: (c.c.key === 'senat' || c.c.key === 'huset') && wn ? { candidate: wn, slot: w, party: wp } : undefined,
       verdict: r.seed.unopposed && !noCand(r, w)
         ? `${wn?.name ?? sideName(r, w)} vinner uten motkandidat`
         : sameParty && wn
@@ -1052,7 +1082,7 @@ function sequenceFor(c: Card): Sequence {
       verdict: `${d} til demokratene, ${n - d} til republikanerne`,
       long: true,
       openMs: 4500,
-      steps: [tilesStep(c.races), impactStep(c.c, null)],
+      steps: [...(c.c.key === 'huset' ? houseWinnersSteps(c.races) : [tilesStep(c.races)]), impactStep(c.c, null)],
     };
   }
   return {
@@ -1084,11 +1114,17 @@ function runSequence(s: Sequence) {
   const t = $('take');
   t.style.setProperty('--c', s.colour);
   t.classList.toggle('long', !!s.long);
+  t.classList.toggle('has-winner', !!s.winner);
   t.innerHTML = `
     <div class="tl">
       <div class="kick">${s.kicker}</div>
       <h2>${s.title}</h2>
+      ${s.winner ? `<div class="call-winner-name">${escapeHTML(s.winner.candidate.name)}</div>` : ''}
       <p>${s.verdict}</p>
+      ${s.winner ? `<figure class="call-winner">
+        ${photo(s.winner.candidate, s.winner.slot, '', s.winner.party)}
+        ${s.winner.candidate.photoCredit || isWiki(s.winner.candidate.photo) ? `<small>Foto: ${escapeHTML(s.winner.candidate.photoCredit ?? 'Wikipedia / Wikimedia Commons')}</small>` : ''}
+      </figure>` : ''}
       <div class="steps">${[0, ...s.steps].map(() => '<i><b></b></i>').join('')}</div>
     </div>
     <div class="tr">${s.steps.map((st) => `<div class="ts">${st.html}</div>`).join('')}</div>`;
@@ -1219,6 +1255,8 @@ function apply(snap: Snapshot) {
 
   const old = prev;
   prev = snap;
+  // Attach bundled portraits before creating call screens from fresh feed candidates.
+  if (!snap.quiet) fillPortraits();
   if (old && !snap.quiet) noteChanges(old, snap);
   if (activeState) renderStateElection(activeState);
   for (const c of CONTESTS) {
@@ -1398,7 +1436,6 @@ function applyFeed(feed: Feed) {
       })];
     })) as Record<Key, RaceState[]>,
   });
-  fillPortraits();
 }
 
 const FEED = q.get('feed') ?? 'https://civicapi.org';
@@ -1537,7 +1574,6 @@ if (mode === 'demo') {
   if (restored && CONTESTS.some((c) => restored.races[c.key].some((r) => r.status !== 'waiting'))) goLive();
   apply(restored ?? waitingSnapshot());
   if (restored) showSource();
-  fillPortraits();
 }
 renderClosings();
 const v0 = q.get('view');

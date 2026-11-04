@@ -204,11 +204,15 @@ last state. Each push is diffed against the last; the diff drives the motion.
   then the rotation resumes. A thin line per step shows progress; `CG NEXT`
   skips a step.
   - Single call (about 20 s): 1) state/district name and verdict on the
-    full party colour; 2) the colour shrinks to a left column and both
+    full party colour, with the winning candidate's portrait, name and photo
+    credit for Senate and individual House calls (initials if no photo is available, hidden in demo);
+    2) the colour shrinks to a left column and both
     candidates appear, the winner first, the loser dimmed, bars growing;
     3) what it means: seat totals, the bar to the majority line, one sentence.
   - Poll-close batch / simultaneous House calls: 1) "6 løp avgjort";
-    2) a tile per state or district in the party colour; 3) what it means.
+    2) a tile per state or district in the party colour, with House winners'
+    portraits and full names on pages of up to six (up to 16 winners total);
+    3) what it means.
   - A backlog of more than four calls is folded into one batch per contest.
 - The "Siste" ticker above the clocks scrolls incoming result changes from all
   three contests in compact form: `FL-4 (huset) Grage (D) 44.0 / Rutherford (R)

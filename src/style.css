@@ -214,6 +214,16 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .take.long.wide h2 { font-size: 86px; }
 .take .tl p { margin: 16px 0 0; font-size: 24px; line-height: 1.25; font-weight: 500; transition: font-size 800ms var(--ease); }
 .take.wide .tl p { font-size: 36px; }
+.take.has-winner.wide .tl { padding-left: 382px; }
+.take.has-winner.wide .tl::before { content: ''; position: absolute; right: -140px; bottom: -170px; width: 700px; height: 700px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M12 49 38 75 88 13' fill='none' stroke='white' stroke-width='12' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E") center / contain no-repeat; opacity: 0.09; pointer-events: none; }
+.take.has-winner.wide .kick, .take.has-winner.wide h2, .take.has-winner.wide .call-winner-name, .take.has-winner.wide .tl > p, .take.has-winner.wide .steps { position: relative; }
+.take.has-winner.wide h2 { font-size: 104px; }
+.call-winner-name { margin-top: 14px; font-size: 32px; line-height: 1.1; font-weight: 600; overflow-wrap: anywhere; transition: font-size 800ms var(--ease); }
+.take.wide .call-winner-name { font-size: 56px; }
+.call-winner { position: absolute; left: 32px; top: 34px; width: 310px; margin: 0; display: flex; flex-direction: column; align-items: center; text-align: center; opacity: 0; visibility: hidden; transition: opacity 300ms ease; }
+.take.wide .call-winner { opacity: 1; visibility: visible; }
+.call-winner .ph { width: 310px; height: 390px; border-radius: 0; font-size: 72px; }
+.call-winner small { margin-top: 10px; font-size: 12px; line-height: 1.25; }
 .take .steps { margin-top: auto; display: flex; gap: 6px; }
 .take .steps i { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.3); }
 .take .steps b { display: block; height: 100%; width: 0; background: #fff; }
@@ -255,6 +265,16 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .tile.more { background: var(--wait); color: var(--ink); justify-content: center; }
 .tile b { font-size: 21px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
 .tile span { font-size: 15px; opacity: 0.9; }
+.house-winners { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.house-winners .tile { flex-direction: row; justify-content: flex-start; align-items: stretch; gap: 0; padding: 0; border-left: 5px solid var(--winner-colour); }
+.house-winners .tile.d { --winner-colour: var(--d); background: var(--d-soft); color: var(--d-ink); }
+.house-winners .tile.r { --winner-colour: var(--r); background: var(--r-soft); color: var(--r-ink); }
+.house-winners .tile.i { --winner-colour: var(--i); background: var(--i-soft); color: var(--i-ink); }
+.house-winners .winner-details { min-width: 0; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; }
+.house-winners .district { font-size: 16px; }
+.house-winners .winner-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin-bottom: 6px; }
+.house-winners .ph { width: 94px; height: auto; align-self: stretch; border-radius: 0; font-size: 28px; opacity: 1; }
+.house-winners .winner-name { display: block; font-size: 24px; }
 
 /* Step: what it means for the chamber */
 .ti { flex: 1; display: flex; flex-direction: column; }
