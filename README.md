@@ -155,6 +155,8 @@ last state. Each push is diffed against the last; the diff drives the motion.
   - Poll-close batch / House seats changing hands: 1) "6 løp avgjort";
     2) a tile per state or district in the party colour; 3) what it means.
   - A backlog of more than four calls is folded into one batch per contest.
-- Between sequences the band above the clocks shows "Siste".
+- Before the first call, the band above the clocks shows "Opptelling": waiting
+  for the first vote counts, then how many races have reported counts and how
+  many are decided. It refreshes with each update. After a call it shows "Siste".
 - Control of a chamber: its own sequence (headline, then the totals), ahead
   of anything queued; afterwards the board lands on that chamber's overview.

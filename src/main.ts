@@ -1018,7 +1018,7 @@ function endSequence() {
   t.classList.add('out');
   t.classList.remove('on');
   const el = $('latest');
-  el.innerHTML = latest ? `<span class="k">Siste</span><span><i style="--c:var(--${latest.party?.toLowerCase() ?? 'faint'})"></i>${latest.text}</span>` : '';
+  renderLatest();
   el.classList.remove('hide');
   holding = false;
   if (then) go(then.key, then.sub); else go(current.key, current.sub);
@@ -1037,6 +1037,21 @@ function hideCard() {
 /* ================================================================ apply */
 
 let prev: Snapshot | null = null;
+
+/** Keep the band useful before the first call, then give the latest call priority. */
+function renderLatest() {
+  const el = $('latest');
+  if (latest) {
+    el.innerHTML = `<span class="k">Siste</span><span><i style="--c:var(--${latest.party?.toLowerCase() ?? 'faint'})"></i>${latest.text}</span>`;
+    return;
+  }
+  const races = prev ? CONTESTS.flatMap((c) => prev!.races[c.key]) : [];
+  const reporting = races.filter((r) => r.reported > 0).length;
+  const called = races.filter((r) => r.status === 'called').length;
+  el.innerHTML = `<span class="k">Opptelling</span><span>${reporting || called
+    ? `Stemmetall fra ${reporting} av ${races.length} løp · ${called} avgjort`
+    : 'Venter på de første stemmetallene'}</span>`;
+}
 
 function apply(snap: Snapshot) {
   const now = performance.now();
@@ -1065,11 +1080,12 @@ function apply(snap: Snapshot) {
       const c = snap.races.senat.includes(last) ? C.senat : C.guv;
       const flip = isFlip(last);
       latest = { text: `<b>${last.seed.name}</b> (${c.short.toLowerCase()}): ${sideName(last, last.winner!)} ${flip ? 'vinner' : 'beholder'}`, party: winnerParty(last)! };
-      $('latest').innerHTML = `<span class="k">Siste</span><span><i style="--c:var(--${latest.party!.toLowerCase()})"></i>${latest.text}</span>`;
     }
+    renderLatest();
     return;
   }
 
+  renderLatest();
   const cards: Card[] = [];
   for (const c of CONTESTS) {
     const before = new Map(old.races[c.key].map((r) => [r.seed.id, r]));
