@@ -130,6 +130,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .stats { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .stat { min-width: 0; gap: 12px; background: var(--panel); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
 .stat .k { font-size: 17px; white-space: nowrap; color: var(--muted); }
+/* The seats that changed hands, under their count */
+.stat .k:has(.flips) { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.stat .flips { font-size: 14px; color: var(--ink); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.stat .flips:empty { display: none; }
 .stat .v { font-size: 32px; white-space: nowrap; font-weight: 700; }
 .stat .v.d { color: var(--d-ink); }
 .stat .v.r { color: var(--r-ink); }

@@ -38,9 +38,9 @@ feed only.
 ## Tabs and pages
 Senatet / Representantenes hus / Guvernører, each with Nyeste tall (for the
 Senate and House: every race an update changed, four per page with "1/3" in
-the subnav; for governors: the four races changed most recently), Oversikt,
-Jevneste løp,
-Skifter parti. Jevneste løp lists only races with vote counts and named
+the subnav; for governors: the four races changed most recently), Oversikt
+(seat totals, the bar, and how many seats changed hands to each party, with
+the states or districts named), and Jevneste løp. Jevneste løp lists only races with vote counts and named
 opponents; waiting races do not fill spare rows. Demo mode hides names.
 Rows in Nyeste tall show each update once and move it in place, top to bottom,
 1.1 seconds apart: an updated race appears with the numbers viewers saw before
@@ -98,8 +98,7 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
   Wikipedia article, packed into `src/nature.json` by `tools/nature`. These
   pages credit their sources at the foot of the page, not in the subnav.
 
-Rotates every `hold` seconds (default 9); "Skifter parti" and "Nyeste tall" are
-skipped while empty. Calls interrupt any tab. Fresh numbers come first: every
+Rotates every `hold` seconds (default 9); "Nyeste tall" is skipped while empty. Calls interrupt any tab. Fresh numbers come first: every
 counting Senate and House race an update changes is queued once (a race already
 on screen updates in place), and the next page changes page through the queue,
 four rows at a time and `newhold` seconds per page (default: `hold`), before

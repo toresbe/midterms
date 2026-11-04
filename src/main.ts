@@ -52,10 +52,10 @@ const ABBR: Record<Party, string> = { D: 'Dem.', R: 'Rep.' };
 type Key = 'senat' | 'huset' | 'guv';
 /** Tabs: the three contests, then poll closings and state fact sheets. */
 type TabKey = Key | 'stenger' | 'stater';
-type Sub = 'siste' | 'oversikt' | 'jevne' | 'skifter';
-const SUBS: Sub[] = ['siste', 'oversikt', 'jevne', 'skifter'];
+type Sub = 'siste' | 'oversikt' | 'jevne';
+const SUBS: Sub[] = ['siste', 'oversikt', 'jevne'];
 const SUB_LABEL: Record<string, string> = {
-  siste: 'Nyeste tall', oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
+  siste: 'Nyeste tall', oversikt: 'Oversikt', jevne: 'Jevneste løp',
   neste: 'Neste', fakta: 'Fakta', fugl: 'Delstatsfugl', blomst: 'Delstatsblomst', visste: 'Visste du?',
   valget: 'Dette valget', folkevalg: 'Folkevalg',
 };
@@ -242,15 +242,17 @@ for (const c of CONTESTS) {
       </div>
       <div class="stats">
         <div class="stat"><span class="k">Avgjort i kveld</span><span class="v num" data-k="called">0</span></div>
-        <div class="stat"><span class="k">Skifter til Dem.</span><span class="v d num" data-k="flipD">0</span></div>
-        <div class="stat"><span class="k">Skifter til Rep.</span><span class="v r num" data-k="flipR">0</span></div>
+        <div class="stat"><span class="k">Skifter til Dem.<small class="flips" data-k="flipDn"></small></span><span class="v d num" data-k="flipD">0</span></div>
+        <div class="stat"><span class="k">Skifter til Rep.<small class="flips" data-k="flipRn"></small></span><span class="v r num" data-k="flipR">0</span></div>
       </div>
     </div>`;
   el.jevne.innerHTML = `<div class="rows"></div><div class="empty" hidden>Alle løp er avgjort.</div>`;
   el.siste.innerHTML = `<div class="rows"></div><div class="empty">Ingen nye tall ennå.</div>`;
-  el.skifter.innerHTML = `<div class="rows"></div><div class="empty">Ingen ${c.key === 'guv' ? 'guvernørseter' : 'seter'} har skiftet parti ennå.</div>`;
   views[c.key] = { c, el, rows: new Map(), recentRows: new Map(), recentOrder: [], lingering: new Map(), lastOrder: [], say: '', flipIds: '' };
 }
+
+/** Seats named under each "Skifter til" count on Oversikt; more are summed up as "+n". */
+const FLIPS_LISTED = 4;
 
 function renderOverview(v: View, rs: RaceState[]) {
   const c = v.c;
@@ -264,6 +266,14 @@ function renderOverview(v: View, rs: RaceState[]) {
   countTo(p.querySelector<HTMLElement>('[data-k="called"]')!, called, (n) => `${Math.round(n)} av ${rs.length}`);
   countTo(p.querySelector<HTMLElement>('[data-k="flipD"]')!, f.filter((r) => winnerParty(r) === 'D').length);
   countTo(p.querySelector<HTMLElement>('[data-k="flipR"]')!, f.filter((r) => winnerParty(r) === 'R').length);
+  // Which seats changed hands, newest first: states (districts for the House), the rest as "+n".
+  for (const party of ['D', 'R'] as Party[]) {
+    const won = f.filter((r) => winnerParty(r) === party).sort((a, b) => (b.calledAt ?? 0) - (a.calledAt ?? 0))
+      .map((r) => (c.key === 'huset' ? r.seed.id : r.seed.state));
+    const shown = won.slice(0, FLIPS_LISTED);
+    p.querySelector<HTMLElement>(`[data-k="flip${party}n"]`)!.textContent =
+      shown.join(', ') + (won.length > shown.length ? ` +${won.length - shown.length}` : '');
+  }
 
   const w = (n: number) => `${(n / c.total) * 100}%`;
   const [d, dl, dh, ind, ih, rh, rl, r] = p.querySelectorAll<HTMLElement>('.seg');
@@ -661,22 +671,6 @@ function nextPage(): Key | null {
 /** How long the page on screen is held. */
 const holdMs = () => (isContest(current.key) && current.sub === 'siste' && batches[current.key]?.page ? NEW_HOLD_MS : HOLD_MS);
 
-function renderFlips(v: View, rs: RaceState[]) {
-  const f = flips(rs).sort((a, b) => (b.calledAt ?? 0) - (a.calledAt ?? 0));
-  const ids = f.slice(0, ROWS).map((r) => r.seed.id).join();
-  v.el.skifter.querySelector<HTMLElement>('.empty')!.hidden = f.length > 0;
-  const cnt = $('subnav').querySelector<HTMLElement>('[data-s="skifter"] .cnt');
-  if (cnt && current.key === v.c.key) cnt.textContent = f.length ? ` (${f.length})` : '';
-  if (ids === v.flipIds) return;
-  v.flipIds = ids;
-  const box = v.el.skifter.querySelector('.rows')!;
-  box.innerHTML = f.slice(0, ROWS).map((r, i) => `
-    <div class="row settled" style="transform:translateY(${i * ROW_STEP}px)">
-      <span class="nm">${r.seed.name}</span>
-      <span class="note"><b style="color:var(--${col(r, r.winner!)}-ink)">${sideName(r, r.winner!)}</b> vinner fra ${FROM[r.seed.incumbent]} &middot; ${pct1(r.winner === 'D' ? r.dem : 100 - r.dem)}</span>
-    </div>`).join('');
-}
-
 /* ==================================================== poll closing times */
 
 const FLAG = FLAGS as Record<string, string>;
@@ -938,8 +932,7 @@ function hasContent(key: TabKey, sub: string): boolean {
   if (key === 'stater' && sub === 'folkevalg') return stateMeasures.some((m) => m.state === activeState);
   // Senate and House: only while paging through new numbers (everything else has been shown already).
   if (isContest(key) && sub === 'siste') return batches[key] ? !!(batches[key]!.page || batches[key]!.queue.length) : !!prev && recentOf(key, prev.races[key]).length > 0;
-  if (key === 'stater' || sub !== 'skifter' || !prev) return true;
-  return flips(prev.races[key]).length > 0;
+  return true;
 }
 
 const pageOf = (key: TabKey, sub: string): HTMLElement => (isContest(key) ? views[key].el[sub as Sub] : extra[key][sub]);
@@ -993,7 +986,6 @@ function go(key: TabKey, sub: string) {
     fill.style.width = '0';
     if (on && auto && !holding) nextFrame(() => { fill.style.transition = `width ${holdMs()}ms linear`; fill.style.width = '100%'; });
   });
-  if (prev && isContest(key)) renderFlips(views[key], prev.races[key]);
   schedule();
 }
 
@@ -1437,7 +1429,6 @@ function apply(snap: Snapshot) {
     renderOverview(v, rs);
     renderClosest(v, rs, now);
     renderRecent(v, rs);
-    renderFlips(v, rs);
   }
   placeIndicator();
   if (!old || snap.quiet) {
