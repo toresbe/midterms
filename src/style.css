@@ -66,6 +66,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .tabs { position: relative; display: flex; gap: 26px; height: 100%; align-items: flex-end; }
 .tab { font-size: 22px; font-weight: 600; color: var(--faint); padding-bottom: 11px; transition: color 400ms ease; white-space: nowrap; }
 .tab.on { color: var(--ink); }
+.chamber-tab { display: flex; flex-direction: column; gap: 2px; padding-bottom: 5px; line-height: 1.1; }
+.tab-seats { display: flex; gap: 10px; font-size: 16px; font-weight: 500; color: var(--muted); }
+.tab-seats .d { color: var(--d-ink); }
+.tab-seats .r { color: var(--r-ink); }
+.tab-seats .i { color: var(--i-ink); }
+.tab-seats b { font-weight: 700; }
 .tabs .ind { position: absolute; bottom: -1px; left: 0; height: 3px; background: var(--ink); transition: transform 600ms var(--ease), width 600ms var(--ease); }
 .credit { margin-left: auto; display: flex; gap: 10px; align-items: flex-start; font-size: 17px; color: var(--muted); }
 .sample { background: var(--flip); color: var(--ink); font-weight: 700; font-size: 15px; padding: 2px 8px; letter-spacing: 0.02em; }

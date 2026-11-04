@@ -110,7 +110,13 @@ frame.innerHTML = `
   <header class="head">
     <div class="title">Mellomvalg</div>
     <nav class="tabs" id="tabs">
-      ${CONTESTS.map((c) => `<span class="tab" data-k="${c.key}">${c.tab}</span>`).join('')}
+      ${CONTESTS.map((c) => `<span class="tab${c.need ? ' chamber-tab' : ''}" data-k="${c.key}"><span>${c.tab}</span>${c.need ? `
+        <span class="tab-seats num" aria-label="Seter">
+          <span class="d">Dem. <b data-seats="D">0</b></span>
+          <span class="r">Rep. <b data-seats="R">0</b></span>
+          <span class="i" data-independent hidden>Uavh. <b data-seats="I">0</b></span>
+          <span><b data-seats="open">0</b> uavgjort</span>
+        </span>` : ''}</span>`).join('')}
       <span class="ind" id="ind"></span>
     </nav>
   </header>
@@ -180,6 +186,20 @@ function seats(c: Contest, t: ChamberTally) {
 }
 
 const flips = (rs: RaceState[]) => rs.filter(isFlip);
+/** Keep chamber totals visible on every page, using the overview's called-seat totals. */
+function renderHeaderSeats(c: Contest, rs: RaceState[]) {
+  if (!c.need) return;
+  const t = tally(rs);
+  const s = seats(c, t);
+  const tab = frame.querySelector<HTMLElement>(`.tab[data-k="${c.key}"]`)!;
+  const totals = { D: s.D, R: s.R, I: t.won.I, open: s.open };
+  for (const [key, value] of Object.entries(totals)) {
+    tab.querySelector<HTMLElement>(`[data-seats="${key}"]`)!.textContent = String(value);
+  }
+  tab.querySelector<HTMLElement>('[data-independent]')!.hidden = totals.I === 0;
+  tab.querySelector('.tab-seats')!.setAttribute('aria-label',
+    `${s.D} seter til Demokratene, ${s.R} til Republikanerne, ${totals.I} uavhengige, ${s.open} uavgjort`);
+}
 /** Colour token for a side's real party: d, r or i. */
 const col = (r: RaceState, slot: Party) => partyOf(r, slot).toLowerCase();
 /** "Demokratene" / "Republikanerne", or an independent's own name. */
@@ -1159,11 +1179,13 @@ function apply(snap: Snapshot) {
   for (const c of CONTESTS) {
     const v = views[c.key];
     const rs = snap.races[c.key];
+    renderHeaderSeats(c, rs);
     renderOverview(v, rs);
     renderClosest(v, rs, now);
     renderRecent(v, rs);
     renderFlips(v, rs);
   }
+  placeIndicator();
   if (!old || snap.quiet) {
     // Open with the most recent call already in the "Siste" line.
     const last = [...snap.races.senat, ...snap.races.guv].filter((x) => x.status === 'called' && x.calledAt !== undefined)
