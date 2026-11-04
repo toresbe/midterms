@@ -1650,11 +1650,29 @@ function saveResults() {
   for (const c of CONTESTS) {
     races[c.key] = prev.races[c.key].filter((r) => r.status !== 'waiting' || r.seed.cand.D || r.seed.cand.R).map((r) => ({
       id: r.seed.id, status: r.status, reported: r.reported, votes: r.votes, dem: r.dem, winner: r.winner, calledBy: r.calledBy,
-      src: r.src, calledAt: r.calledAt, cand: r.seed.cand, incumbent: r.seed.incumbent, unopposed: r.seed.unopposed,
+      src: r.src, calledAt: r.calledAt, cand: { D: withoutPhoto(r.seed.cand.D), R: withoutPhoto(r.seed.cand.R) },
+      incumbent: r.seed.incumbent, unopposed: r.seed.unopposed,
     }));
   }
   const saved: Saved = { savedAt: Date.now(), updated: feedUpdated, changed: [...changedAt], races };
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch { /* no storage: start from scratch next time */ }
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(saved));
+  } catch (e) {
+    // No storage, or full: the next launch starts from scratch. Say so once.
+    if (!saveFailed) console.warn('Could not save results for relaunch', e);
+    saveFailed = true;
+  }
+}
+let saveFailed = false;
+/**
+ * Portraits are embedded images (a few hundred KB each): with them the snapshot outgrows the
+ * storage quota after the first poll and every later save fails. They come back from the
+ * portrait catalogue at launch (fillPortraits), so keep only names and labels.
+ */
+function withoutPhoto(c: Candidate | null): Candidate | null {
+  if (!c) return c;
+  const { photo: _p, photoCredit: _c, photoSource: _s, ...rest } = c;
+  return rest;
 }
 
 /** The saved results as a snapshot, or null if there are none (or they're over a day old). */
@@ -1699,6 +1717,8 @@ if (mode === 'demo') {
   if (restored && CONTESTS.some((c) => restored.races[c.key].some((r) => r.status !== 'waiting'))) goLive();
   apply(restored ?? waitingSnapshot());
   if (restored) showSource();
+  // The saved results carry no photos: put the portraits back without waiting for the first poll.
+  if (restored) fillPortraits();
 }
 renderClosings();
 const v0 = q.get('view');
