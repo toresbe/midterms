@@ -42,7 +42,9 @@ Oversikt, Jevneste løp,
 Skifter parti. Jevneste løp lists only races with vote counts and named
 opponents; waiting races do not fill spare rows. Demo mode hides names.
 Rows in Nyeste tall reveal changed figures one at a time, 1.1 seconds apart,
-with a brief highlight. Existing figures stay visible until their row updates;
+with a brief highlight. Updates wait while the page is hidden, playback is stopped,
+or a call screen is showing, and start after the page transition finishes.
+Existing figures stay visible until their row updates;
 newer updates replace queued figures for the same race.
 Nyeste tall includes only undecided races with updated counts; called races leave
 the page and do not return on subsequent count updates unless the call is withdrawn.

@@ -466,9 +466,25 @@ function noteChanges(old: Snapshot, snap: Snapshot) {
 const recentStages = new Map<View, { pending: Map<string, RaceState>; timer: number }>();
 const RECENT_UPDATE_MS = 1100;
 
+function startRecent(v: View, delay = 0) {
+  const stage = recentStages.get(v);
+  if (!stage || stage.timer || !stage.pending.size || !playing || holding
+    || current.key !== v.c.key || current.sub !== 'siste') return;
+  stage.timer = window.setTimeout(() => revealRecent(v), delay);
+}
+
+function pauseRecent() {
+  for (const stage of recentStages.values()) {
+    clearTimeout(stage.timer);
+    stage.timer = 0;
+  }
+}
+
 /** Reveal one row at a time, coalescing newer figures while a row waits. */
 function revealRecent(v: View) {
   const stage = recentStages.get(v)!;
+  stage.timer = 0;
+  if (!playing || holding || current.key !== v.c.key || current.sub !== 'siste') return;
   const entry = stage.pending.entries().next().value;
   if (!entry) { stage.timer = 0; return; }
   const [id, race] = entry;
@@ -511,7 +527,7 @@ function renderRecent(v: View, rs: RaceState[]) {
       paintRow(el, r);
     }
   });
-  if (!stage.timer) revealRecent(v);
+  startRecent(v);
   for (const [id, el] of v.recentRows) {
     if (ids.has(id) || el.classList.contains('leave')) continue;
     el.classList.add('leave');
@@ -808,6 +824,7 @@ function hasContent(key: TabKey, sub: string): boolean {
 const pageOf = (key: TabKey, sub: string): HTMLElement => (isContest(key) ? views[key].el[sub as Sub] : extra[key][sub]);
 
 function go(key: TabKey, sub: string) {
+  pauseRecent();
   const was = pageOf(current.key, current.sub);
   if (key === 'stater' && (current.key !== 'stater' || pendingState)) nextState();
   if (key === 'stater' && !hasContent(key, sub)) sub = 'valget';
@@ -838,6 +855,8 @@ function go(key: TabKey, sub: string) {
   }
   next.classList.add('on');
   current = { key, sub };
+  // Let the page transition finish before revealing updates and their highlights.
+  if (isContest(key) && sub === 'siste') startRecent(views[key], 700);
 
   // Tabs: the underline slides to the active tab.
   frame.querySelectorAll<HTMLElement>('.tab').forEach((t) => t.classList.toggle('on', t.dataset.k === key));
@@ -1130,6 +1149,7 @@ function showNext() {
 }
 
 function runSequence(s: Sequence) {
+  pauseRecent();
   holding = true;
   pauseTicker();
   clearTimeout(rotateTimer);
@@ -1383,12 +1403,14 @@ const api = {
   play() {
     if (playing) return;
     playing = true;
+    if (isContest(current.key) && current.sub === 'siste') startRecent(views[current.key], 700);
     if (!holding) resumeTicker();
     frame.classList.add('on');
     if (mode !== 'live') startSample();
     schedule();
   },
   stop() {
+    pauseRecent();
     playing = false;
     pauseTicker();
     clearInterval(sampleTimer);
