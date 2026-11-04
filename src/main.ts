@@ -1,5 +1,5 @@
 import './style.css';
-import { ResultUpdates, formatResultUpdate } from './result-updates';
+import { ResultUpdates, formatResultUpdate, resultSignature } from './result-updates';
 import {
   SENATE_SEEDS, SENATE_HOLDOVER, GOV_SEEDS, GOV_HOLDOVER, houseSeeds, STATE_NAME, POLLS, etClock,
   type Party, type RaceSeed, type Candidate, type Side,
@@ -53,7 +53,7 @@ type TabKey = Key | 'stenger' | 'stater';
 type Sub = 'siste' | 'oversikt' | 'jevne' | 'skifter';
 const SUBS: Sub[] = ['siste', 'oversikt', 'jevne', 'skifter'];
 const SUB_LABEL: Record<string, string> = {
-  siste: 'Siste tall', oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
+  siste: 'Nyeste tall', oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
   neste: 'Neste', fakta: 'Fakta', fugl: 'Delstatsfugl', blomst: 'Delstatsblomst', visste: 'Visste du?',
   valget: 'Dette valget', folkevalg: 'Folkevalg',
 };
@@ -179,8 +179,6 @@ function seats(c: Contest, t: ChamberTally) {
   if (c.need) {
     control = D >= c.need.D ? 'D' : R >= c.need.R ? 'R' : null;
     lean = control ?? (projD >= c.need.D ? 'D' : projR >= c.need.R ? 'R' : null);
-  } else {
-    lean = projD > projR ? 'D' : projR > projD ? 'R' : null;
   }
   return { D, R, open: c.total - D - R - t.won.I, control, lean, projD, projR };
 }
@@ -223,6 +221,7 @@ for (const c of CONTESTS) {
   // Senate: the line sits half a seat past the threshold, so it reads right
   // from either end (51 from the left, 50 from the right). Same for 218.
   const mark = c.need ? ((c.total - c.need.R + c.need.D) / 2 / c.total) * 100 : null;
+  el.oversikt.classList.toggle('governor-overview', !c.need);
   el.oversikt.innerHTML = `
     <div class="say"></div>
     <div class="ov">
@@ -298,9 +297,7 @@ function renderOverview(v: View, rs: RaceState[]) {
   else if (c.need && s.control) say = `<span class="${cls(s.control)}">${NAME[s.control]}</span> får flertall i ${c.the}`;
   else if (c.need && s.lean) say = `${c.the} heller mot <span class="${cls(s.lean)}">${NAME[s.lean]}</span>`;
   else if (c.need) say = 'For jevnt til å si hvem som får flertall';
-  else if (rs.every((x) => x.status === 'called')) say = `<span class="${cls(s.D > s.R ? 'D' : 'R')}">${NAME[s.D > s.R ? 'D' : 'R']}</span> får ${Math.max(s.D, s.R)} guvernører`;
-  else if (s.lean) say = `<span class="${cls(s.lean)}">${NAME[s.lean]}</span> ligger an til flest guvernører`;
-  else say = 'Jevnt om guvernørene';
+  else say = `${called} av ${rs.length} guvernørvalg avgjort`;
   if (say !== v.say) {
     v.say = say;
     const box = p.querySelector('.say')!;
@@ -442,8 +439,6 @@ function renderClosest(v: View, rs: RaceState[], now: number) {
 /* Fresh numbers: when each race's numbers last changed (Date.now()), keyed "senat:GA". */
 const changedAt = new Map<string, number>();
 let lastChange = 0;
-/** Changes restored from an earlier launch are history: only changes after this moment flash. */
-const LAUNCHED_AT = Date.now();
 /** The contest with the most changed races in the last update: the next page change goes there. */
 let pendingJump: Key | null = null;
 const fresh = () => Date.now() - lastChange < QUIET_MS;
@@ -452,7 +447,7 @@ const tickerItems = new Set<{ line: HTMLElement; animation: Animation; width: nu
 let tickerFrame = 0;
 const TICKER_SPEED = 100;
 const TICKER_GAP = 36;
-const recentOf = (key: Key, rs: RaceState[]) => rs.filter((r) => changedAt.has(`${key}:${r.seed.id}`))
+const recentOf = (key: Key, rs: RaceState[]) => rs.filter((r) => r.status === 'counting' && changedAt.has(`${key}:${r.seed.id}`))
   .sort((a, b) => changedAt.get(`${key}:${b.seed.id}`)! - changedAt.get(`${key}:${a.seed.id}`)!);
 
 /** Note which races' numbers changed since the last snapshot. */
@@ -468,12 +463,38 @@ function noteChanges(old: Snapshot, snap: Snapshot) {
   }
 }
 
-/** "Siste tall": the races whose numbers changed most recently; a row that just changed flashes. */
+const recentStages = new Map<View, { pending: Map<string, RaceState>; timer: number }>();
+const RECENT_UPDATE_MS = 1100;
+
+/** Reveal one row at a time, coalescing newer figures while a row waits. */
+function revealRecent(v: View) {
+  const stage = recentStages.get(v)!;
+  const entry = stage.pending.entries().next().value;
+  if (!entry) { stage.timer = 0; return; }
+  const [id, race] = entry;
+  stage.pending.delete(id);
+  const el = v.recentRows.get(id);
+  if (el && !el.classList.contains('leave')) {
+    el.style.visibility = '';
+    paintRow(el, race);
+    el.dataset.result = resultSignature(race);
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+  stage.timer = window.setTimeout(() => revealRecent(v), RECENT_UPDATE_MS);
+}
+
+/** "Nyeste tall": undecided races whose numbers changed most recently. */
 function renderRecent(v: View, rs: RaceState[]) {
   const shown = recentOf(v.c.key, rs).slice(0, ROWS);
   const ids = new Set(shown.map((r) => r.seed.id));
+  let stage = recentStages.get(v);
+  if (!stage) { stage = { pending: new Map(), timer: 0 }; recentStages.set(v, stage); }
+  for (const id of stage.pending.keys()) if (!ids.has(id)) stage.pending.delete(id);
   shown.forEach((r, i) => {
     const el = rowFor(v, r, v.recentRows, v.el.siste);
+    el.classList.remove('leave');
     const y = i * ROW_STEP;
     if (el.classList.contains('enter')) {
       el.style.transform = `translateY(${y + 22}px)`;
@@ -481,21 +502,23 @@ function renderRecent(v: View, rs: RaceState[]) {
     } else {
       el.style.transform = `translateY(${y}px)`;
     }
-    paintRow(el, r);
-    const t = changedAt.get(`${v.c.key}:${r.seed.id}`)!;
-    const at = String(t);
-    if (el.dataset.changed !== at) {
-      el.dataset.changed = at;
-      if (t < LAUNCHED_AT) return;
-      el.classList.remove('flash');
-      void el.offsetWidth;
-      el.classList.add('flash');
+    if (el.dataset.result !== resultSignature(r)) {
+      // Existing rows retain their previous figures until their turn.
+      if (!el.dataset.result) el.style.visibility = 'hidden';
+      stage.pending.set(r.seed.id, r);
+    } else {
+      stage.pending.delete(r.seed.id);
+      paintRow(el, r);
     }
   });
+  if (!stage.timer) revealRecent(v);
   for (const [id, el] of v.recentRows) {
     if (ids.has(id) || el.classList.contains('leave')) continue;
     el.classList.add('leave');
-    setTimeout(() => { el.remove(); v.recentRows.delete(id); }, 600);
+    setTimeout(() => {
+      if (!el.classList.contains('leave')) return;
+      el.remove(); v.recentRows.delete(id);
+    }, 600);
   }
   v.el.siste.querySelector<HTMLElement>('.empty')!.hidden = shown.length > 0;
   const sub = frame.querySelector<HTMLElement>('.sub[data-s="siste"]');
@@ -965,7 +988,7 @@ function impactStep(c: Contest, focus: Party | null): Step {
   return {
     ms: 7000,
     html: `
-      <div class="ti">
+      <div class="ti${c.need ? '' : ' governor-impact'}">
         <div class="tk">${c.tab}${c.need ? ` &middot; ${c.need.D} for flertall` : ''}</div>
         <div class="inums">
           <div class="d"><span>${NAME.D}</span><b class="num">${s.D}</b></div>
@@ -1313,6 +1336,8 @@ const sampleSnapshot = (t: number): Snapshot => ({
 });
 
 function reset() {
+  for (const stage of recentStages.values()) clearTimeout(stage.timer);
+  recentStages.clear();
   prev = null;
   queue.length = 0;
   pauseTicker();

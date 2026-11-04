@@ -36,11 +36,18 @@ feed only.
   Oslo station time (24-hour)
 
 ## Tabs and pages
-Senatet / Representantenes hus / Guvernører, each with Siste tall (the four
+Senatet / Representantenes hus / Guvernører, each with Nyeste tall (the four
 races whose numbers changed most recently; a row flashes when it changes),
 Oversikt, Jevneste løp,
 Skifter parti. Jevneste løp lists only races with vote counts and named
 opponents; waiting races do not fill spare rows. Demo mode hides names.
+Rows in Nyeste tall reveal changed figures one at a time, 1.1 seconds apart,
+with a brief highlight. Existing figures stay visible until their row updates;
+newer updates replace queued figures for the same race.
+Nyeste tall includes only undecided races with updated counts; called races leave
+the page and do not return on subsequent count updates unless the call is withdrawn.
+Governor totals use separate party count panels, with no shared seat bar,
+majority target, or headline about which party will have the most governors.
 On Oversikt the seat bar fills from each end with seats won (solid)
 and leading (soft); seats with no numbers yet are softly striped in the colour
 of the party holding them now, with a small legend under the bar. Then two tabs for quiet stretches:
@@ -84,9 +91,9 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
   Wikipedia article, packed into `src/nature.json` by `tools/nature`. These
   pages credit their sources at the foot of the page, not in the subnav.
 
-Rotates every `hold` seconds (default 9); "Skifter parti" and "Siste tall" are
+Rotates every `hold` seconds (default 9); "Skifter parti" and "Nyeste tall" are
 skipped while empty. Calls interrupt any tab. Fresh numbers come first: after
-an update the next page change jumps to Siste tall on the contest with the
+an update the next page change jumps to Nyeste tall on the contest with the
 most changed races (at most once per three pages), and while any numbers have
 changed in the last `quiet` seconds (default 300) the fillers (Stengetider,
 Delstatene) are skipped and Oversikt shows every other round. When the numbers
