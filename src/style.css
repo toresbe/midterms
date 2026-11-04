@@ -177,10 +177,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .row.settled .note { font-size: 21px; color: var(--muted); text-align: right; }
 .row.settled .note b { font-weight: 700; }
 
-/* "Siste": the latest call, at rest above the clocks */
+/* Incoming result updates scroll above the clocks. */
 .latest { position: absolute; left: 0; right: 0; bottom: var(--clock-height); height: 56px; display: flex; align-items: center; gap: 14px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 20px; transition: opacity 400ms ease; }
-.latest .k { font-weight: 700; color: var(--ink); }
-.latest i { display: inline-block; width: 12px; height: 12px; margin-right: 8px; background: var(--c, var(--faint)); }
+.latest .k { flex: none; font-weight: 700; color: var(--ink); }
+.ticker-window { position: relative; flex: 1; min-width: 0; height: 100%; overflow: hidden; }
+.ticker-item { position: absolute; left: 0; top: 50%; margin-top: -0.6em; line-height: 1.2; width: max-content; white-space: nowrap; will-change: transform; }
 .latest.hide { opacity: 0; }
 
 /* Clocks: always on. US zones in 12-hour, station time (Oslo) in 24-hour. */
@@ -191,10 +192,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .clk em { font-style: normal; font-weight: 700; color: var(--ink); margin-left: 3px; font-size: 13px; }
 .clk.station em { color: #fff; }
 .clk b { font-weight: 600; font-size: 23px; }
-.clk.station { background: var(--ink); color: #fff; padding-left: 14px; border: 0; flex-direction: row; align-items: center; gap: 10px; }
+.clk.station { position: relative; background: var(--ink); color: #fff; padding: 0 40px 0 14px; border: 0; }
 .clk.station span { color: #fff; font-size: 15px; }
 .clk.station b { font-size: 24px; font-weight: 700; }
 .ping { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.35); }
+.clk.station .ping { position: absolute; right: 22px; top: calc(50% - 4px); }
 .ping.go { animation: ping 1200ms ease-out; }
 @keyframes ping { 0% { background: #fff; box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); } 100% { background: rgba(255, 255, 255, 0.35); box-shadow: 0 0 0 9px rgba(255, 255, 255, 0); } }
 

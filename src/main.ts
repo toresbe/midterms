@@ -1,4 +1,5 @@
 import './style.css';
+import { ResultUpdates, formatResultUpdate } from './result-updates';
 import {
   SENATE_SEEDS, SENATE_HOLDOVER, GOV_SEEDS, GOV_HOLDOVER, houseSeeds, STATE_NAME, POLLS, etClock,
   type Party, type RaceSeed, type Candidate, type Side,
@@ -447,7 +448,11 @@ const LAUNCHED_AT = Date.now();
 /** The contest with the most changed races in the last update: the next page change goes there. */
 let pendingJump: Key | null = null;
 const fresh = () => Date.now() - lastChange < QUIET_MS;
-const numbersOf = (r: RaceState) => r.status === 'waiting' ? 'waiting' : `${r.status}|${r.winner ?? ''}|${r.reported}|${r.dem}|${r.votes ?? ''}`;
+const resultUpdates = new ResultUpdates();
+const tickerItems = new Set<{ line: HTMLElement; animation: Animation; width: number }>();
+let tickerFrame = 0;
+const TICKER_SPEED = 100;
+const TICKER_GAP = 36;
 const recentOf = (key: Key, rs: RaceState[]) => rs.filter((r) => changedAt.has(`${key}:${r.seed.id}`))
   .sort((a, b) => changedAt.get(`${key}:${b.seed.id}`)! - changedAt.get(`${key}:${a.seed.id}`)!);
 
@@ -456,14 +461,9 @@ function noteChanges(old: Snapshot, snap: Snapshot) {
   const t = Date.now();
   let best = 0;
   for (const c of CONTESTS) {
-    const before = new Map(old.races[c.key].map((r) => [r.seed.id, numbersOf(r)]));
-    let n = 0;
-    for (const r of snap.races[c.key]) {
-      const now = numbersOf(r);
-      if (now === 'waiting' || now === before.get(r.seed.id)) continue;
-      changedAt.set(`${c.key}:${r.seed.id}`, t);
-      n++;
-    }
+    const changed = resultUpdates.add(c.key, old.races[c.key], snap.races[c.key], snap.when);
+    const n = changed.length;
+    for (const r of changed) changedAt.set(`${c.key}:${r.seed.id}`, t);
     if (n) lastChange = t;
     if (n > best) { best = n; pendingJump = c.key; }
   }
@@ -897,7 +897,6 @@ type Card =
   | { kind: 'control'; c: Contest; party: Party };
 
 const queue: Card[] = [];
-let latest: { text: string; party: Side | null } | null = null;
 let cardBusy = false;
 let cardTimer = 0;
 
@@ -1029,7 +1028,6 @@ function sequenceFor(c: Card): Sequence {
     const flip = isFlip(r);
     const seat = c.c.key === 'guv' ? 'guvernørsetet' : 'setet';
     const wn = who(r, w);
-    latest = { text: `<b>${r.seed.name}</b> (${c.c.short.toLowerCase()}): ${wn ? `${wn.name} (${wp === 'I' ? 'uavh.' : ABBR[wp]})` : sideName(r, w)} ${flip ? 'vinner' : 'beholder'}`, party: wp };
     // Two candidates from one party (e.g. a California top-two race): say who, not which party.
     const sameParty = partyOf(r, 'D') === partyOf(r, 'R');
     return {
@@ -1048,7 +1046,6 @@ function sequenceFor(c: Card): Sequence {
   if (c.kind === 'batch') {
     const n = c.races.length;
     const d = c.races.filter((r) => winnerParty(r) === 'D').length;
-    latest = { text: `<b>${n} ${c.flipsOnly ? 'seter skifter parti' : 'løp avgjort'}</b> (${c.c.short.toLowerCase()}): ${d} Dem., ${n - d} Rep.`, party: null };
     return {
       colour: 'var(--ink)',
       kicker: `${c.c.tab} &middot; ${c.flipsOnly ? 'skifter parti' : 'avgjort'}`,
@@ -1082,6 +1079,7 @@ function showNext() {
 
 function runSequence(s: Sequence) {
   holding = true;
+  pauseTicker();
   clearTimeout(rotateTimer);
   frame.querySelectorAll<HTMLElement>('.sub .fill').forEach((f) => { f.style.transition = 'none'; f.style.width = '0'; });
   const t = $('take');
@@ -1130,6 +1128,7 @@ function endSequence() {
   renderLatest();
   el.classList.remove('hide');
   holding = false;
+  if (playing) resumeTicker();
   if (then) go(then.key, then.sub); else go(current.key, current.sub);
   cardTimer = window.setTimeout(showNext, 1200);
 }
@@ -1147,13 +1146,61 @@ function hideCard() {
 
 let prev: Snapshot | null = null;
 
-/** Keep the band useful before the first call, then give the latest call priority. */
+function pauseTicker() {
+  cancelAnimationFrame(tickerFrame);
+  tickerFrame = 0;
+  for (const item of tickerItems) item.animation.pause();
+}
+
+function resumeTicker() {
+  for (const item of tickerItems) item.animation.play();
+  renderLatest();
+}
+
+/** Admit the next entry once the preceding entry's trailing edge leaves room. */
+function scheduleTicker() {
+  if (tickerFrame || !tickerItems.size || !playing || holding) return;
+  tickerFrame = requestAnimationFrame(() => {
+    tickerFrame = 0;
+    renderLatest();
+  });
+}
+
 function renderLatest() {
   const el = $('latest');
-  if (latest) {
-    el.innerHTML = `<span class="k">Siste</span><span><i style="--c:var(--${latest.party?.toLowerCase() ?? 'faint'})"></i>${latest.text}</span>`;
+  const tail = [...tickerItems].at(-1);
+  if (tail) {
+    // All entries move at the same speed, so a fixed gap never closes.
+    const distance = Number(tail.animation.currentTime ?? 0) / 1000 * TICKER_SPEED;
+    if (distance < tail.width + TICKER_GAP) { scheduleTicker(); return; }
+  }
+  const update = resultUpdates.take();
+  if (update) {
+    if (!tickerItems.size) {
+      el.innerHTML = '<span class="k">Siste</span><div class="ticker-window"></div>';
+    }
+    const viewport = el.querySelector<HTMLElement>('.ticker-window')!;
+    const line = document.createElement('span');
+    line.className = 'ticker-item';
+    line.textContent = formatResultUpdate(update, C[update.contest as Key].short.toLowerCase(), mode !== 'demo');
+    viewport.appendChild(line);
+    const width = line.offsetWidth;
+    const animation = line.animate([
+      { transform: `translateX(${viewport.clientWidth}px)` },
+      { transform: `translateX(${-width}px)` },
+    ], { duration: (viewport.clientWidth + width) / TICKER_SPEED * 1000, easing: 'linear' });
+    const item = { line, animation, width };
+    tickerItems.add(item);
+    animation.onfinish = () => {
+      tickerItems.delete(item);
+      line.remove();
+      renderLatest();
+    };
+    if (!playing || holding) animation.pause();
+    scheduleTicker();
     return;
   }
+  if (tickerItems.size) { scheduleTicker(); return; }
   const races = prev ? CONTESTS.flatMap((c) => prev!.races[c.key]) : [];
   const reporting = races.filter((r) => r.status !== 'waiting').length;
   const called = races.filter((r) => r.status === 'called').length;
@@ -1186,14 +1233,6 @@ function apply(snap: Snapshot) {
   }
   placeIndicator();
   if (!old || snap.quiet) {
-    // Open with the most recent call already in the "Siste" line.
-    const last = [...snap.races.senat, ...snap.races.guv].filter((x) => x.status === 'called' && x.calledAt !== undefined)
-      .sort((a, b) => b.calledAt! - a.calledAt!)[0];
-    if (last && !latest) {
-      const c = snap.races.senat.includes(last) ? C.senat : C.guv;
-      const flip = isFlip(last);
-      latest = { text: `<b>${last.seed.name}</b> (${c.short.toLowerCase()}): ${sideName(last, last.winner!)} ${flip ? 'vinner' : 'beholder'}`, party: winnerParty(last)! };
-    }
     renderLatest();
     return;
   }
@@ -1239,7 +1278,10 @@ const sampleSnapshot = (t: number): Snapshot => ({
 function reset() {
   prev = null;
   queue.length = 0;
-  latest = null;
+  pauseTicker();
+  for (const item of tickerItems) { item.animation.cancel(); item.line.remove(); }
+  tickerItems.clear();
+  resultUpdates.clear();
   for (const v of Object.values(views)) {
     v.lingering.clear();
     for (const el of v.rows.values()) el.remove();
@@ -1279,12 +1321,14 @@ const api = {
   play() {
     if (playing) return;
     playing = true;
+    if (!holding) resumeTicker();
     frame.classList.add('on');
     if (mode !== 'live') startSample();
     schedule();
   },
   stop() {
     playing = false;
+    pauseTicker();
     clearInterval(sampleTimer);
     clearTimeout(rotateTimer);
     frame.classList.remove('on');

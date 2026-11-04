@@ -209,14 +209,20 @@ last state. Each push is diffed against the last; the diff drives the motion.
   - Poll-close batch / simultaneous House calls: 1) "6 løp avgjort";
     2) a tile per state or district in the party colour; 3) what it means.
   - A backlog of more than four calls is folded into one batch per contest.
-- Before the first call, the band above the clocks shows "Opptelling": waiting
-  for the first vote counts, then how many races have reported counts and how
-  many are decided. It refreshes with each update. After a call it shows "Siste".
+- The "Siste" ticker above the clocks scrolls incoming result changes from all
+  three contests in compact form: `FL-4 (huset) Grage (D) 44.0 / Rutherford (R)
+  56.0, 55% opptalt`. It uses race IDs, candidate surnames and party codes, plus
+  winner calls. Entries follow with a small gap as soon as there is room, while
+  preceding entries are still on screen. Unchanged polls and photo
+  refreshes add nothing. Pending entries for the same race use its newest figures
+  without losing their place in the queue. The ticker pauses during full-screen
+  calls and when stopped. Once the queue drains, "Opptelling" shows the count of
+  reporting and decided races. Restored results form a baseline, not new updates.
 - Control of a chamber: its own sequence (headline, then the totals), ahead
   of anything queued; afterwards the board lands on that chamber's overview.
 
 ## Verification
 
-Run `node --experimental-strip-types --test tools/civicapi/test.mjs` (Node 22.6+)
+Run `node --experimental-strip-types --test tools/civicapi/test.mjs tools/ticker/test.mjs` (Node 22.6+)
 and `npm run build`. The adapter tests cover district IDs, third-party and
 same-party candidates, explicit calls, test-data rejection and corrections.
