@@ -30,7 +30,8 @@ feed only.
   under it (in demo mode it says the numbers are invented instead)
 - "Mellomvalg" and the tabs, the source credit
 - Senate, House, and governor headers show live Democratic and Republican seat totals
-  (holdovers plus called winners), independents when present, and undecided seats.
+  (holdovers plus called winners) on one line, e.g. "Senatet D 41 / R 31",
+  with independents appended when present. Undecided seats remain on Oversikt.
 - Clocks: New York, Chicago, Denver, Los Angeles, Alaska, Hawaii (12-hour) and
   Oslo station time (24-hour)
 

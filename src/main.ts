@@ -113,10 +113,9 @@ frame.innerHTML = `
     <nav class="tabs" id="tabs">
       ${CONTESTS.map((c) => `<span class="tab chamber-tab" data-k="${c.key}"><span>${c.tab}</span>
         <span class="tab-seats num" aria-label="Seter">
-          <span class="d">Dem. <b data-seats="D">0</b></span>
-          <span class="r">Rep. <b data-seats="R">0</b></span>
-          <span class="i" data-independent hidden>Uavh. <b data-seats="I">0</b></span>
-          <span><b data-seats="open">0</b> uavgjort</span>
+          <span class="d">D <b data-seats="D">0</b></span><span>/</span>
+          <span class="r">R <b data-seats="R">0</b></span>
+          <span data-independent hidden>/ <span class="i">I <b data-seats="I">0</b></span></span>
         </span></span>`).join('')}
       <span class="ind" id="ind"></span>
     </nav>
@@ -192,7 +191,7 @@ function renderHeaderSeats(c: Contest, rs: RaceState[]) {
   const t = tally(rs);
   const s = seats(c, t);
   const tab = frame.querySelector<HTMLElement>(`.tab[data-k="${c.key}"]`)!;
-  const totals = { D: s.D, R: s.R, I: t.won.I, open: s.open };
+  const totals = { D: s.D, R: s.R, I: t.won.I };
   for (const [key, value] of Object.entries(totals)) {
     tab.querySelector<HTMLElement>(`[data-seats="${key}"]`)!.textContent = String(value);
   }
