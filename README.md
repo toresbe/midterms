@@ -42,8 +42,12 @@ the subnav; for governors: the four races changed most recently), Oversikt,
 Jevneste løp,
 Skifter parti. Jevneste løp lists only races with vote counts and named
 opponents; waiting races do not fill spare rows. Demo mode hides names.
-Rows in Nyeste tall reveal changed figures top to bottom, 1.1 seconds apart,
-with a brief highlight. Updates wait while the page is hidden, playback is stopped,
+Rows in Nyeste tall show each update once and move it in place, top to bottom,
+1.1 seconds apart: an updated race appears with the numbers viewers saw before
+and its shares, bar and count tween to the new ones (1.4 s); a small ▲/▼ with
+the change in points fades in under each share, the side that gained gets a
+soft tint from its own end, and a new leader's name steps forward briefly. A
+race with its first numbers fades in. Updates wait while the page is hidden, playback is stopped,
 or a call screen is showing, and start after the page transition finishes.
 Existing figures stay visible until their row updates;
 newer updates replace queued figures for the same race.

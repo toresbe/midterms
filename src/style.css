@@ -426,9 +426,20 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 /* Counted share unknown (live feed without reporting units): the split, dimmed */
 .row.unk .mini .md, .row.unk .mini .mr { opacity: 0.45; }
 
-/* "Nyeste tall": a row whose numbers just changed flashes, then settles */
-.row.flash { animation: row-flash 1100ms ease-out; }
-@keyframes row-flash {
-  0%, 65% { box-shadow: inset 6px 0 0 var(--ink); background: #ffe59b; }
-  to { box-shadow: inset 6px 0 0 transparent; background: var(--panel); }
-}
+/* "Nyeste tall": an update moves the old numbers to the new ones, and says which way they went */
+.row.instant .mini .md, .row.instant .mini .mr { transition: none; }
+.row .mini .md, .row .mini .mr { transition-duration: 1400ms; }
+.row.appear { animation: row-appear 700ms ease-out; }
+@keyframes row-appear { from { opacity: 0; } to { opacity: 1; } }
+.row .cn .delta { position: absolute; bottom: -2px; font-size: 14px; font-weight: 600; white-space: nowrap; opacity: 0; animation: delta 4200ms ease-out forwards; }
+.row .cn.d .delta { left: calc(100% + 8px); color: var(--lci, var(--d-ink)); }
+.row .cn.r .delta { right: calc(100% + 8px); color: var(--rci, var(--r-ink)); }
+@keyframes delta { 0% { opacity: 0; transform: translateY(4px); } 12% { opacity: 1; transform: none; } 70% { opacity: 1; } 100% { opacity: 0; } }
+/* The side that gained: a soft tint from its own end, fading */
+.row::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.row.gain-d::before { background: linear-gradient(90deg, transparent 18%, color-mix(in srgb, var(--lc, var(--d)) 12%, transparent) 40%, transparent 62%); animation: gain 2600ms ease-out; }
+.row.gain-r::before { background: linear-gradient(270deg, transparent 18%, color-mix(in srgb, var(--rc, var(--r)) 12%, transparent) 40%, transparent 62%); animation: gain 2600ms ease-out; }
+@keyframes gain { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+/* A new leader: their name steps forward for a moment */
+.row.newlead-d .cn.d .who, .row.newlead-r .cn.r .who { animation: newlead 3200ms ease-out; }
+@keyframes newlead { 0%, 75% { color: var(--ink); font-weight: 700; } 100% { color: var(--muted); font-weight: 400; } }

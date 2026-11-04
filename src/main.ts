@@ -358,7 +358,7 @@ function rowFor(v: View, r: RaceState, rows = v.rows, page: HTMLElement = v.el.j
   return el;
 }
 
-function paintRow(el: HTMLElement, r: RaceState) {
+function paintRow(el: HTMLElement, r: RaceState, ms = 700) {
   // Names and photos can arrive after the row was built (the feed loads in the background).
   const ck = JSON.stringify([who(r, 'D'), who(r, 'R'), r.seed.unopposed]);
   if (el.dataset.cand !== ck) {
@@ -379,13 +379,16 @@ function paintRow(el: HTMLElement, r: RaceState) {
   if (r.status !== 'called') el.classList.remove('called');
   if (r.status === 'waiting') { el.querySelector('.wait')!.innerHTML = closeLabel(r); return; }
   const [dv, rv] = el.querySelectorAll<HTMLElement>('.cn .pc');
-  countTo(dv, r.dem, pct1, 700);
-  countTo(rv, 100 - r.dem, pct1, 700);
+  countTo(dv, r.dem, pct1, ms);
+  countTo(rv, 100 - r.dem, pct1, ms);
   // The live feed often doesn't say how much is counted: then give the vote count, and draw the split dimmed.
   const known = r.reported > 0;
   const ct = el.querySelector<HTMLElement>('.ct')!;
-  if (known) countTo(ct, r.reported * 100, (n) => `${pct0(n)} talt`, 700);
-  else { delete ct.dataset.v; ct.textContent = r.votes ? `${nbInt(r.votes)} st.` : ''; }
+  // Count share and vote count tween from their previous values (the two never share one starting point).
+  if (ct.dataset.kind !== (known ? 'pct' : 'votes')) { delete ct.dataset.v; ct.dataset.kind = known ? 'pct' : 'votes'; }
+  if (known) countTo(ct, r.reported * 100, (n) => `${pct0(n)} talt`, ms);
+  else if (r.votes) countTo(ct, r.votes, (n) => `${nbInt(n)} st.`, ms);
+  else { delete ct.dataset.v; ct.textContent = ''; }
   el.classList.toggle('unk', !known);
   // Each side grows from its own end; the gap in the middle is the vote not yet counted.
   const share = known ? r.reported * 100 : 100;
@@ -399,6 +402,39 @@ function paintRow(el: HTMLElement, r: RaceState) {
     el.querySelector('.verdict')!.innerHTML = `${flip ? '<span class="tagflip">Skifte</span>' : ''}${same ? `${r.seed.cand[r.winner]?.name ?? sideName(r, r.winner)} vinner` : `${sideName(r, r.winner)} ${flip ? 'vinner' : 'beholder'}`}`;
     el.classList.add('called');
   }
+}
+
+/** How long an update's numbers take to move from old to new on Nyeste tall. */
+const UPDATE_TWEEN_MS = 1400;
+
+/** Restart a one-shot CSS animation class. */
+function restart(el: HTMLElement, cls: string) {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+/**
+ * The direction of an update, said quietly: each share gets a small ▲/▼ with the change in points,
+ * the side that gained a soft tint that fades, and a new leader a brief emphasis on their name.
+ */
+function accentChange(el: HTMLElement, r: RaceState, wasDem: number) {
+  const delta = r.dem - wasDem;
+  for (const p of ['D', 'R'] as Party[]) {
+    const cn = el.querySelector<HTMLElement>(`.cn.${p.toLowerCase()}`)!;
+    cn.querySelector('.delta')?.remove();
+    const d = p === 'D' ? delta : -delta;
+    if (Math.abs(d) < 0.05 || noCand(r, p)) continue;
+    const tag = document.createElement('span');
+    tag.className = `delta ${d > 0 ? 'up' : 'down'}`;
+    tag.textContent = `${d > 0 ? '▲' : '▼'} ${d > 0 ? '+' : '−'}${nb1(Math.abs(d))}`;
+    cn.querySelector('.pc')!.after(tag);
+  }
+  el.classList.remove('gain-d', 'gain-r', 'newlead-d', 'newlead-r');
+  if (Math.abs(delta) >= 0.05) restart(el, delta > 0 ? 'gain-d' : 'gain-r');
+  const led = wasDem === 50 ? null : wasDem > 50 ? 'd' : 'r';
+  const leads = r.dem === 50 ? null : r.dem > 50 ? 'd' : 'r';
+  if (led && leads && led !== leads) restart(el, `newlead-${leads}`);
 }
 
 function renderClosest(v: View, rs: RaceState[], now: number) {
@@ -451,8 +487,8 @@ let pendingJump: Key | null = null;
  * screen updates in place instead. `page` is the page on screen (fixed order), `pageNo` its number.
  */
 const PAGED: Key[] = ['senat', 'huset'];
-const batches = Object.fromEntries(PAGED.map((k) => [k, { queue: [] as string[], queuedAt: new Map<string, number>(), page: null as string[] | null, pageNo: 0 }])) as
-  Partial<Record<Key, { queue: string[]; queuedAt: Map<string, number>; page: string[] | null; pageNo: number }>>;
+const batches = Object.fromEntries(PAGED.map((k) => [k, { queue: [] as string[], queuedAt: new Map<string, number>(), from: new Map<string, RaceState>(), page: null as string[] | null, pageNo: 0 }])) as
+  Partial<Record<Key, { queue: string[]; queuedAt: Map<string, number>; from: Map<string, RaceState>; page: string[] | null; pageNo: number }>>;
 const fresh = () => Date.now() - lastChange < QUIET_MS;
 const resultUpdates = new ResultUpdates();
 const tickerItems = new Set<{ line: HTMLElement; animation: Animation; width: number }>();
@@ -475,8 +511,15 @@ function noteChanges(old: Snapshot, snap: Snapshot) {
     if (n) lastChange = t;
     const b = batches[c.key];
     if (b) {
+      const before = new Map(old.races[c.key].map((r) => [r.seed.id, r]));
       for (const r of changed) {
-        if (r.status === 'counting' && !b.page?.includes(r.seed.id) && !b.queue.includes(r.seed.id)) { b.queue.push(r.seed.id); b.queuedAt.set(r.seed.id, t); }
+        if (r.status === 'counting' && !b.page?.includes(r.seed.id) && !b.queue.includes(r.seed.id)) {
+          b.queue.push(r.seed.id);
+          b.queuedAt.set(r.seed.id, t);
+          // The numbers viewers saw before this update: the row starts there and moves to the new ones.
+          const was = before.get(r.seed.id);
+          if (was && was.status !== 'waiting') b.from.set(r.seed.id, was);
+        }
       }
     } else if (n > best) { best = n; pendingJump = c.key; }
   }
@@ -511,12 +554,13 @@ function revealRecent(v: View) {
   stage.pending.delete(id);
   const el = v.recentRows.get(id);
   if (el && !el.classList.contains('leave')) {
+    const wasDem = el.dataset.dem !== undefined && el.style.visibility !== 'hidden' ? Number(el.dataset.dem) : null;
     el.style.visibility = '';
-    paintRow(el, race);
+    paintRow(el, race, UPDATE_TWEEN_MS);
     el.dataset.result = resultSignature(race);
-    el.classList.remove('flash');
-    void el.offsetWidth;
-    el.classList.add('flash');
+    el.dataset.dem = String(race.dem);
+    if (wasDem === null) restart(el, 'appear');
+    else accentChange(el, race, wasDem);
   }
   stage.timer = window.setTimeout(() => revealRecent(v), RECENT_UPDATE_MS);
 }
@@ -547,12 +591,22 @@ function renderRecent(v: View, rs: RaceState[]) {
       el.dataset.result = resultSignature(r);
       paintRow(el, r);
     } else if (el.dataset.result !== resultSignature(r)) {
-      // Existing rows retain their previous figures until their turn.
-      if (!el.dataset.result) el.style.visibility = 'hidden';
+      // Existing rows keep their previous figures until their turn. A new row for an updated race starts
+      // from the numbers before the update (drawn at once, no transition); a race with its first numbers fades in.
+      const was = b?.from.get(r.seed.id);
+      if (!el.dataset.result && was) {
+        el.classList.add('instant');
+        paintRow(el, was);
+        el.dataset.result = resultSignature(was);
+        el.dataset.dem = String(was.dem);
+        nextFrame(() => el.classList.remove('instant'));
+        b!.from.delete(r.seed.id);
+      } else if (!el.dataset.result) el.style.visibility = 'hidden';
       stage.pending.set(r.seed.id, r);
     } else {
       stage.pending.delete(r.seed.id);
       paintRow(el, r);
+      el.dataset.dem = String(r.dem);
     }
   });
   startRecent(v);
