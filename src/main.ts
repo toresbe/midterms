@@ -423,6 +423,8 @@ function renderClosest(v: View, rs: RaceState[], now: number) {
 /* Fresh numbers: when each race's numbers last changed (Date.now()), keyed "senat:GA". */
 const changedAt = new Map<string, number>();
 let lastChange = 0;
+/** Changes restored from an earlier launch are history: only changes after this moment flash. */
+const LAUNCHED_AT = Date.now();
 /** The contest with the most changed races in the last update: the next page change goes there. */
 let pendingJump: Key | null = null;
 const fresh = () => Date.now() - lastChange < QUIET_MS;
@@ -462,9 +464,11 @@ function renderRecent(v: View, rs: RaceState[]) {
       el.style.transform = `translateY(${y}px)`;
     }
     paintRow(el, r);
-    const at = String(changedAt.get(`${v.c.key}:${r.seed.id}`));
+    const t = changedAt.get(`${v.c.key}:${r.seed.id}`)!;
+    const at = String(t);
     if (el.dataset.changed !== at) {
       el.dataset.changed = at;
+      if (t < LAUNCHED_AT) return;
       el.classList.remove('flash');
       void el.offsetWidth;
       el.classList.add('flash');
@@ -1373,6 +1377,7 @@ async function pollContest(key: Key) {
     feedSeen.add(key);
     feedUpdated[key] = Number.isFinite(updated) ? updated : 0;
     feedErrors.delete(key);
+    saveResults();
   } catch (e) {
     feedErrors.add(key);
     console.warn(`civicAPI ${key}`, e);
@@ -1403,6 +1408,57 @@ function startFeed() {
   setInterval(showSource, 1000);
 }
 
+/* ============================================ saved results (relaunch) */
+
+// The last results are kept in the browser (CasparCG 2.5 keeps CEF storage on disk), so a relaunch
+// opens with them instead of "venter på valgresultater" and doesn't announce every call again.
+const SAVE_KEY = 'mellomvalg-snapshot-v1';
+const SAVE_MAX_AGE = 24 * 3600e3;
+type SavedRace = Pick<RaceState, 'status' | 'reported' | 'votes' | 'dem' | 'winner' | 'calledBy' | 'src' | 'calledAt'>
+  & Pick<RaceState['seed'], 'cand' | 'incumbent' | 'unopposed'> & { id: string };
+interface Saved { savedAt: number; updated: Partial<Record<Key, number>>; changed: [string, number][]; races: Partial<Record<Key, SavedRace[]>> }
+
+function saveResults() {
+  if (mode !== 'live' || !prev) return;
+  const races: Saved['races'] = {};
+  for (const c of CONTESTS) {
+    races[c.key] = prev.races[c.key].filter((r) => r.status !== 'waiting' || r.seed.cand.D || r.seed.cand.R).map((r) => ({
+      id: r.seed.id, status: r.status, reported: r.reported, votes: r.votes, dem: r.dem, winner: r.winner, calledBy: r.calledBy,
+      src: r.src, calledAt: r.calledAt, cand: r.seed.cand, incumbent: r.seed.incumbent, unopposed: r.seed.unopposed,
+    }));
+  }
+  const saved: Saved = { savedAt: Date.now(), updated: feedUpdated, changed: [...changedAt], races };
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch { /* no storage: start from scratch next time */ }
+}
+
+/** The saved results as a snapshot, or null if there are none (or they're over a day old). */
+function restoreResults(): Snapshot | null {
+  let saved: Saved;
+  try {
+    if (q.get('reset') === '1') { localStorage.removeItem(SAVE_KEY); return null; }
+    saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null');
+  } catch { return null; }
+  if (!saved?.races || !(Date.now() - saved.savedAt < SAVE_MAX_AGE)) return null;
+  for (const c of CONTESTS) {
+    const u = saved.updated?.[c.key];
+    if (u) { feedUpdated[c.key] = u; feedSeen.add(c.key); }
+  }
+  for (const [k, t] of saved.changed ?? []) { changedAt.set(k, t); lastChange = Math.max(lastChange, t); }
+  return {
+    when: new Date(),
+    quiet: true,
+    races: Object.fromEntries(CONTESTS.map((c) => {
+      const byId = new Map((saved.races[c.key] ?? []).map((r) => [r.id, r]));
+      return [c.key, c.seeds.map((seed) => {
+        const r = byId.get(seed.id);
+        if (!r) return { seed, status: 'waiting' as const, reported: 0, dem: 50 };
+        const { id: _, cand, incumbent, unopposed, ...numbers } = r;
+        return { ...numbers, seed: { ...seed, cand: cand ?? seed.cand, incumbent: incumbent ?? seed.incumbent, unopposed } };
+      })];
+    })) as Record<Key, RaceState[]>,
+  };
+}
+
 /* First frame: no cards for what came before. */
 if (mode === 'demo') {
   $('source').textContent = 'Demo: oppdiktede tall, kandidatnavn skjult';
@@ -1412,7 +1468,11 @@ if (mode === 'demo') {
 } else {
   $('sample').hidden = true;
   $('source').textContent = 'civicAPI · venter på valgresultater';
-  apply(waitingSnapshot());
+  // Pick up where the last launch left off: those numbers and calls are the baseline, so only new calls get a card.
+  const restored = FEED === 'off' ? null : restoreResults();
+  if (restored && CONTESTS.some((c) => restored.races[c.key].some((r) => r.status !== 'waiting'))) goLive();
+  apply(restored ?? waitingSnapshot());
+  if (restored) showSource();
   fillPortraits();
 }
 renderClosings();

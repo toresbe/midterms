@@ -101,6 +101,11 @@ Query: `t` (replay start, ET hours, e.g. 21.5), `speed` (sim minutes per
 second), `hold`, `quiet` (seconds; see above), `view` (e.g. `huset:jevne`),
 `auto=0`, `autoplay=0`.
 
+The latest results are saved in the browser's localStorage after each poll
+(CasparCG 2.5 keeps CEF storage on disk). A relaunch within 24 hours opens
+with them: no "venter på valgresultater", and calls already seen are not
+announced again; only new calls get a card. `reset=1` clears the saved results.
+
 ## Real data: civicAPI
 
 By default the template reads civicAPI v2 directly from `https://civicapi.org`
