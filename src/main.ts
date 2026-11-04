@@ -33,6 +33,8 @@ const END = 26.5;
 const SPEED = Number(q.get('speed')) || 2; // simulated minutes per real second
 const TICK_MS = 3000; // how often the sample feed delivers a new count
 const HOLD_MS = (Number(q.get('hold')) || 9) * 1000; // per subpage
+// While numbers changed this recently (seconds), fresh numbers come first and the filler tabs are skipped.
+const QUIET_MS = (Number(q.get('quiet')) || 300) * 1000;
 const ROWS = 4;
 // Read the CSS row geometry so ordering animations stay aligned with the layout.
 const layoutStyle = getComputedStyle(document.documentElement);
@@ -47,10 +49,10 @@ const ABBR: Record<Party, string> = { D: 'Dem.', R: 'Rep.' };
 type Key = 'senat' | 'huset' | 'guv';
 /** Tabs: the three contests, then poll closings and state fact sheets. */
 type TabKey = Key | 'stenger' | 'stater';
-type Sub = 'oversikt' | 'jevne' | 'skifter';
-const SUBS: Sub[] = ['oversikt', 'jevne', 'skifter'];
+type Sub = 'siste' | 'oversikt' | 'jevne' | 'skifter';
+const SUBS: Sub[] = ['siste', 'oversikt', 'jevne', 'skifter'];
 const SUB_LABEL: Record<string, string> = {
-  oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
+  siste: 'Siste tall', oversikt: 'Oversikt', jevne: 'Jevneste løp', skifter: 'Skifter parti',
   neste: 'Neste', fakta: 'Fakta', fugl: 'Delstatsfugl', blomst: 'Delstatsblomst', visste: 'Visste du?',
   valget: 'Dette valget', folkevalg: 'Folkevalg',
 };
@@ -188,7 +190,7 @@ function sideName(r: RaceState, slot: Party): string {
 
 /* ================================================================ pages */
 
-interface View { c: Contest; el: Record<Sub, HTMLElement>; rows: Map<string, HTMLElement>; lingering: Map<string, { until: number; index: number; race: RaceState }>; lastOrder: string[]; say: string; flipIds: string }
+interface View { c: Contest; el: Record<Sub, HTMLElement>; rows: Map<string, HTMLElement>; recentRows: Map<string, HTMLElement>; lingering: Map<string, { until: number; index: number; race: RaceState }>; lastOrder: string[]; say: string; flipIds: string }
 const views = {} as Record<Key, View>;
 
 for (const c of CONTESTS) {
@@ -225,8 +227,9 @@ for (const c of CONTESTS) {
       </div>
     </div>`;
   el.jevne.innerHTML = `<div class="rows"></div><div class="empty" hidden>Alle løp er avgjort.</div>`;
+  el.siste.innerHTML = `<div class="rows"></div><div class="empty">Ingen nye tall ennå.</div>`;
   el.skifter.innerHTML = `<div class="rows"></div><div class="empty">Ingen ${c.key === 'guv' ? 'guvernørseter' : 'seter'} har skiftet parti ennå.</div>`;
-  views[c.key] = { c, el, rows: new Map(), lingering: new Map(), lastOrder: [], say: '', flipIds: '' };
+  views[c.key] = { c, el, rows: new Map(), recentRows: new Map(), lingering: new Map(), lastOrder: [], say: '', flipIds: '' };
 }
 
 function renderOverview(v: View, rs: RaceState[]) {
@@ -316,8 +319,8 @@ function closeLabel(r: RaceState) {
     : `Stenger ${etFmt.format(simDate(r.seed.closesET))} ${abbr('America/New_York', simDate(r.seed.closesET))}`;
 }
 
-function rowFor(v: View, r: RaceState): HTMLElement {
-  let el = v.rows.get(r.seed.id);
+function rowFor(v: View, r: RaceState, rows = v.rows, page: HTMLElement = v.el.jevne): HTMLElement {
+  let el = rows.get(r.seed.id);
   if (el) return el;
   el = document.createElement('div');
   el.className = 'row enter';
@@ -332,8 +335,8 @@ function rowFor(v: View, r: RaceState): HTMLElement {
     <span class="ct num"></span>
     <span class="wait"></span>
     <span class="verdict"></span>`;
-  v.el.jevne.querySelector('.rows')!.appendChild(el);
-  v.rows.set(r.seed.id, el);
+  page.querySelector('.rows')!.appendChild(el);
+  rows.set(r.seed.id, el);
   return el;
 }
 
@@ -415,6 +418,66 @@ function renderClosest(v: View, rs: RaceState[], now: number) {
   empty.hidden = shown.length > 0;
   empty.textContent = rs.every((r) => r.status === 'called')
     ? 'Alle løp er avgjort.' : 'Venter på stemmetall og kandidatnavn.';
+}
+
+/* Fresh numbers: when each race's numbers last changed (Date.now()), keyed "senat:GA". */
+const changedAt = new Map<string, number>();
+let lastChange = 0;
+/** The contest with the most changed races in the last update: the next page change goes there. */
+let pendingJump: Key | null = null;
+const fresh = () => Date.now() - lastChange < QUIET_MS;
+const numbersOf = (r: RaceState) => r.status === 'waiting' ? 'waiting' : `${r.status}|${r.winner ?? ''}|${r.reported}|${r.dem}|${r.votes ?? ''}`;
+const recentOf = (key: Key, rs: RaceState[]) => rs.filter((r) => changedAt.has(`${key}:${r.seed.id}`))
+  .sort((a, b) => changedAt.get(`${key}:${b.seed.id}`)! - changedAt.get(`${key}:${a.seed.id}`)!);
+
+/** Note which races' numbers changed since the last snapshot. */
+function noteChanges(old: Snapshot, snap: Snapshot) {
+  const t = Date.now();
+  let best = 0;
+  for (const c of CONTESTS) {
+    const before = new Map(old.races[c.key].map((r) => [r.seed.id, numbersOf(r)]));
+    let n = 0;
+    for (const r of snap.races[c.key]) {
+      const now = numbersOf(r);
+      if (now === 'waiting' || now === before.get(r.seed.id)) continue;
+      changedAt.set(`${c.key}:${r.seed.id}`, t);
+      n++;
+    }
+    if (n) lastChange = t;
+    if (n > best) { best = n; pendingJump = c.key; }
+  }
+}
+
+/** "Siste tall": the races whose numbers changed most recently; a row that just changed flashes. */
+function renderRecent(v: View, rs: RaceState[]) {
+  const shown = recentOf(v.c.key, rs).slice(0, ROWS);
+  const ids = new Set(shown.map((r) => r.seed.id));
+  shown.forEach((r, i) => {
+    const el = rowFor(v, r, v.recentRows, v.el.siste);
+    const y = i * ROW_STEP;
+    if (el.classList.contains('enter')) {
+      el.style.transform = `translateY(${y + 22}px)`;
+      nextFrame(() => { el.classList.remove('enter'); el.style.transform = `translateY(${y}px)`; });
+    } else {
+      el.style.transform = `translateY(${y}px)`;
+    }
+    paintRow(el, r);
+    const at = String(changedAt.get(`${v.c.key}:${r.seed.id}`));
+    if (el.dataset.changed !== at) {
+      el.dataset.changed = at;
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+    }
+  });
+  for (const [id, el] of v.recentRows) {
+    if (ids.has(id) || el.classList.contains('leave')) continue;
+    el.classList.add('leave');
+    setTimeout(() => { el.remove(); v.recentRows.delete(id); }, 600);
+  }
+  v.el.siste.querySelector<HTMLElement>('.empty')!.hidden = shown.length > 0;
+  const sub = frame.querySelector<HTMLElement>('.sub[data-s="siste"]');
+  if (sub && current.key === v.c.key) sub.hidden = !shown.length;
 }
 
 function renderFlips(v: View, rs: RaceState[]) {
@@ -692,6 +755,7 @@ let auto = q.get('auto') !== '0';
 function hasContent(key: TabKey, sub: string): boolean {
   if (key === 'stenger') return closingsLeft();
   if (key === 'stater' && sub === 'folkevalg') return stateMeasures.some((m) => m.state === activeState);
+  if (isContest(key) && sub === 'siste') return !!prev && recentOf(key, prev.races[key]).length > 0;
   if (key === 'stater' || sub !== 'skifter' || !prev) return true;
   return flips(prev.races[key]).length > 0;
 }
@@ -718,6 +782,7 @@ function go(key: TabKey, sub: string) {
     frame.querySelector<HTMLElement>('.sub[data-s="folkevalg"]')!.hidden = !hasContent(key, 'folkevalg');
   }
   if (key === 'stenger') renderClosings();
+  if (isContest(key)) frame.querySelector<HTMLElement>('.sub[data-s="siste"]')!.hidden = !hasContent(key, 'siste');
   // The race tabs credit their numbers up here; the other pages credit their sources at the foot.
   $('source').hidden = !isContest(key);
   $('sample').hidden = !isContest(key) || mode !== 'demo';
@@ -768,15 +833,32 @@ function advance() {
       return;
     }
   }
+  // New numbers just came in: show them, on the contest with the most changes.
+  // At most one jump per three pages, so a feed that changes every tick can't pin the board to one page.
+  const jump = pendingJump;
+  pendingJump = null;
+  if (jump && current.sub !== 'siste' && Date.now() - lastJump > 3 * HOLD_MS && hasContent(jump, 'siste')) {
+    lastJump = Date.now();
+    go(jump, 'siste');
+    return;
+  }
+  // While numbers keep coming, skip the fillers (closing times, state pages) and show Oversikt every other round.
+  const busy = fresh();
   const seq = TAB_KEYS.flatMap((k) => TAB_SUBS[k].map((s) => [k, s] as [TabKey, string]));
   let i = seq.findIndex(([k, s]) => k === current.key && s === current.sub);
   for (let n = 0; n < seq.length; n++) {
     i = (i + 1) % seq.length;
-    if (hasContent(...seq[i])) break;
+    const [k, s] = seq[i];
+    if (!hasContent(k, s)) continue;
+    if (busy && !isContest(k)) continue;
+    if (busy && s === 'oversikt' && (overviewSkip[k as Key] = !overviewSkip[k as Key])) continue;
+    break;
   }
   go(...seq[i]);
 }
 
+const overviewSkip: Partial<Record<Key, boolean>> = {};
+let lastJump = 0;
 let holding = false;
 function schedule() {
   clearTimeout(rotateTimer);
@@ -1068,12 +1150,14 @@ function apply(snap: Snapshot) {
 
   const old = prev;
   prev = snap;
+  if (old && !snap.quiet) noteChanges(old, snap);
   if (activeState) renderStateElection(activeState);
   for (const c of CONTESTS) {
     const v = views[c.key];
     const rs = snap.races[c.key];
     renderOverview(v, rs);
     renderClosest(v, rs, now);
+    renderRecent(v, rs);
     renderFlips(v, rs);
   }
   if (!old || snap.quiet) {
@@ -1194,7 +1278,7 @@ const api = {
     auto = false;
     // "stater:TX" shows Texas.
     if (k === 'stater' && s && FACTS[s.toUpperCase()]) { pendingState = s.toUpperCase(); s = undefined; }
-    go(k, s && TAB_SUBS[k].includes(s) ? s : TAB_SUBS[k][0]);
+    go(k, s && TAB_SUBS[k].includes(s) ? s : TAB_SUBS[k].find((x) => hasContent(k, x)) ?? TAB_SUBS[k][0]);
   },
   /** Push results as JSON in the board's own format (see README). */
   update(raw: string) {

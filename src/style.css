@@ -391,3 +391,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 
 /* Counted share unknown (live feed without reporting units): the split, dimmed */
 .row.unk .mini .md, .row.unk .mini .mr { opacity: 0.45; }
+
+/* "Siste tall": a row whose numbers just changed flashes, then settles */
+.row.flash { animation: row-flash 2600ms ease-out; }
+@keyframes row-flash {
+  from { box-shadow: inset 6px 0 0 var(--ink); background: #fff6d8; }
+  to { box-shadow: inset 6px 0 0 transparent; background: var(--panel); }
+}

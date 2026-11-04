@@ -33,7 +33,9 @@ feed only.
   Oslo station time (24-hour)
 
 ## Tabs and pages
-Senatet / Representantenes hus / Guvernører, each with Oversikt, Jevneste løp,
+Senatet / Representantenes hus / Guvernører, each with Siste tall (the four
+races whose numbers changed most recently; a row flashes when it changes),
+Oversikt, Jevneste løp,
 Skifter parti. Jevneste løp lists only races with vote counts and named
 opponents; waiting races do not fill spare rows. Demo mode hides names.
 On Oversikt the seat bar fills from each end with seats won (solid)
@@ -79,8 +81,13 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
   Wikipedia article, packed into `src/nature.json` by `tools/nature`. These
   pages credit their sources at the foot of the page, not in the subnav.
 
-Rotates every `hold` seconds (default 9); "Skifter parti" is skipped while
-empty. Calls interrupt any tab.
+Rotates every `hold` seconds (default 9); "Skifter parti" and "Siste tall" are
+skipped while empty. Calls interrupt any tab. Fresh numbers come first: after
+an update the next page change jumps to Siste tall on the contest with the
+most changed races (at most once per three pages), and while any numbers have
+changed in the last `quiet` seconds (default 300) the fillers (Stengetider,
+Delstatene) are skipped and Oversikt shows every other round. When the numbers
+stop, the full rotation comes back.
 
     PLAY 1-90 [HTML] "http://host/mellomvalg/index.html"
     CG 1-90 NEXT 0                 dismiss the card on screen, else next page
@@ -91,7 +98,8 @@ empty. Calls interrupt any tab.
     CG 1-90 STOP 0                 fade out
 
 Query: `t` (replay start, ET hours, e.g. 21.5), `speed` (sim minutes per
-second), `hold`, `view` (e.g. `huset:jevne`), `auto=0`, `autoplay=0`.
+second), `hold`, `quiet` (seconds; see above), `view` (e.g. `huset:jevne`),
+`auto=0`, `autoplay=0`.
 
 ## Real data: civicAPI
 
