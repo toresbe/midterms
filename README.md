@@ -36,12 +36,13 @@ feed only.
   Oslo station time (24-hour)
 
 ## Tabs and pages
-Senatet / Representantenes hus / Guvernører, each with Nyeste tall (the four
-races whose numbers changed most recently; a row flashes when it changes),
-Oversikt, Jevneste løp,
+Senatet / Representantenes hus / Guvernører, each with Nyeste tall (for the
+Senate and House: every race an update changed, four per page with "1/3" in
+the subnav; for governors: the four races changed most recently), Oversikt,
+Jevneste løp,
 Skifter parti. Jevneste løp lists only races with vote counts and named
 opponents; waiting races do not fill spare rows. Demo mode hides names.
-Rows in Nyeste tall reveal changed figures one at a time, 1.1 seconds apart,
+Rows in Nyeste tall reveal changed figures top to bottom, 1.1 seconds apart,
 with a brief highlight. Updates wait while the page is hidden, playback is stopped,
 or a call screen is showing, and start after the page transition finishes.
 Existing figures stay visible until their row updates;
@@ -94,9 +95,15 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
   pages credit their sources at the foot of the page, not in the subnav.
 
 Rotates every `hold` seconds (default 9); "Skifter parti" and "Nyeste tall" are
-skipped while empty. Calls interrupt any tab. Fresh numbers come first: after
-an update the next page change jumps to Nyeste tall on the contest with the
-most changed races (at most once per three pages), and while any numbers have
+skipped while empty. Calls interrupt any tab. Fresh numbers come first: every
+counting Senate and House race an update changes is queued once (a race already
+on screen updates in place), and the next page changes page through the queue,
+four rows at a time and `newhold` seconds per page (default: `hold`), before
+anything else. Updates arriving meanwhile join the queue; the contest that has
+waited longest goes next. A contest's first poll after a fresh launch is the
+baseline and queues nothing; restored results never queue. Governors: after an
+update the next page change jumps to their Nyeste tall (at most once per three
+pages). While any numbers have
 changed in the last `quiet` seconds (default 300) the fillers (Stengetider,
 Delstatene) are skipped and Oversikt shows every other round. When the numbers
 stop, the full rotation comes back.
@@ -110,7 +117,7 @@ stop, the full rotation comes back.
     CG 1-90 STOP 0                 fade out
 
 Query: `t` (replay start, ET hours, e.g. 21.5), `speed` (sim minutes per
-second), `hold`, `quiet` (seconds; see above), `view` (e.g. `huset:jevne`),
+second), `hold`, `newhold`, `quiet` (seconds; see above), `view` (e.g. `huset:jevne`),
 `auto=0`, `autoplay=0`.
 
 The latest results are saved in the browser's localStorage after each poll

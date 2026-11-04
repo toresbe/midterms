@@ -36,6 +36,8 @@ const TICK_MS = 3000; // how often the sample feed delivers a new count
 const HOLD_MS = (Number(q.get('hold')) || 9) * 1000; // per subpage
 // While numbers changed this recently (seconds), fresh numbers come first and the filler tabs are skipped.
 const QUIET_MS = (Number(q.get('quiet')) || 300) * 1000;
+// Seconds per page while paging through every race an update changed ("Nyeste tall", Senate and House).
+const NEW_HOLD_MS = (Number(q.get('newhold')) || HOLD_MS / 1000) * 1000;
 const ROWS = 4;
 // Read the CSS row geometry so ordering animations stay aligned with the layout.
 const layoutStyle = getComputedStyle(document.documentElement);
@@ -207,7 +209,7 @@ function sideName(r: RaceState, slot: Party): string {
 
 /* ================================================================ pages */
 
-interface View { c: Contest; el: Record<Sub, HTMLElement>; rows: Map<string, HTMLElement>; recentRows: Map<string, HTMLElement>; lingering: Map<string, { until: number; index: number; race: RaceState }>; lastOrder: string[]; say: string; flipIds: string }
+interface View { c: Contest; el: Record<Sub, HTMLElement>; rows: Map<string, HTMLElement>; recentRows: Map<string, HTMLElement>; recentOrder: string[]; lingering: Map<string, { until: number; index: number; race: RaceState }>; lastOrder: string[]; say: string; flipIds: string }
 const views = {} as Record<Key, View>;
 
 for (const c of CONTESTS) {
@@ -247,7 +249,7 @@ for (const c of CONTESTS) {
   el.jevne.innerHTML = `<div class="rows"></div><div class="empty" hidden>Alle løp er avgjort.</div>`;
   el.siste.innerHTML = `<div class="rows"></div><div class="empty">Ingen nye tall ennå.</div>`;
   el.skifter.innerHTML = `<div class="rows"></div><div class="empty">Ingen ${c.key === 'guv' ? 'guvernørseter' : 'seter'} har skiftet parti ennå.</div>`;
-  views[c.key] = { c, el, rows: new Map(), recentRows: new Map(), lingering: new Map(), lastOrder: [], say: '', flipIds: '' };
+  views[c.key] = { c, el, rows: new Map(), recentRows: new Map(), recentOrder: [], lingering: new Map(), lastOrder: [], say: '', flipIds: '' };
 }
 
 function renderOverview(v: View, rs: RaceState[]) {
@@ -439,8 +441,18 @@ function renderClosest(v: View, rs: RaceState[], now: number) {
 /* Fresh numbers: when each race's numbers last changed (Date.now()), keyed "senat:GA". */
 const changedAt = new Map<string, number>();
 let lastChange = 0;
-/** The contest with the most changed races in the last update: the next page change goes there. */
+/** Changes restored from an earlier launch are history: they don't flash or queue. */
+const LAUNCHED_AT = Date.now();
+/** Governors: the contest's "Nyeste tall" page is visited after an update (at most once per three pages). */
 let pendingJump: Key | null = null;
+/**
+ * Senate and House: every counting race an update changes is queued (once), and the rotation pages
+ * through the queue ROWS at a time before anything else; calls still interrupt. A race already on
+ * screen updates in place instead. `page` is the page on screen (fixed order), `pageNo` its number.
+ */
+const PAGED: Key[] = ['senat', 'huset'];
+const batches = Object.fromEntries(PAGED.map((k) => [k, { queue: [] as string[], queuedAt: new Map<string, number>(), page: null as string[] | null, pageNo: 0 }])) as
+  Partial<Record<Key, { queue: string[]; queuedAt: Map<string, number>; page: string[] | null; pageNo: number }>>;
 const fresh = () => Date.now() - lastChange < QUIET_MS;
 const resultUpdates = new ResultUpdates();
 const tickerItems = new Set<{ line: HTMLElement; animation: Animation; width: number }>();
@@ -455,11 +467,18 @@ function noteChanges(old: Snapshot, snap: Snapshot) {
   const t = Date.now();
   let best = 0;
   for (const c of CONTESTS) {
+    // A contest's first poll after a fresh launch is the starting point, not a flood of new numbers.
+    if (c.key === baselineKey) continue;
     const changed = resultUpdates.add(c.key, old.races[c.key], snap.races[c.key], snap.when);
     const n = changed.length;
     for (const r of changed) changedAt.set(`${c.key}:${r.seed.id}`, t);
     if (n) lastChange = t;
-    if (n > best) { best = n; pendingJump = c.key; }
+    const b = batches[c.key];
+    if (b) {
+      for (const r of changed) {
+        if (r.status === 'counting' && !b.page?.includes(r.seed.id) && !b.queue.includes(r.seed.id)) { b.queue.push(r.seed.id); b.queuedAt.set(r.seed.id, t); }
+      }
+    } else if (n > best) { best = n; pendingJump = c.key; }
   }
 }
 
@@ -485,9 +504,10 @@ function revealRecent(v: View) {
   const stage = recentStages.get(v)!;
   stage.timer = 0;
   if (!playing || holding || current.key !== v.c.key || current.sub !== 'siste') return;
-  const entry = stage.pending.entries().next().value;
-  if (!entry) { stage.timer = 0; return; }
-  const [id, race] = entry;
+  // Top to bottom, in the order the rows stand on screen.
+  const id = v.recentOrder.find((x) => stage.pending.has(x)) ?? stage.pending.keys().next().value;
+  if (!id) return;
+  const race = stage.pending.get(id)!;
   stage.pending.delete(id);
   const el = v.recentRows.get(id);
   if (el && !el.classList.contains('leave')) {
@@ -503,8 +523,12 @@ function revealRecent(v: View) {
 
 /** "Nyeste tall": undecided races whose numbers changed most recently. */
 function renderRecent(v: View, rs: RaceState[]) {
-  const shown = recentOf(v.c.key, rs).slice(0, ROWS);
+  // Paging (Senate, House): the page's races in a fixed order, so rows never reshuffle while they reveal.
+  const b = batches[v.c.key];
+  const byId = new Map(rs.map((r) => [r.seed.id, r]));
+  const shown = b?.page ? b.page.map((id) => byId.get(id)!).filter(Boolean) : recentOf(v.c.key, rs).slice(0, ROWS);
   const ids = new Set(shown.map((r) => r.seed.id));
+  v.recentOrder = shown.map((r) => r.seed.id);
   let stage = recentStages.get(v);
   if (!stage) { stage = { pending: new Map(), timer: 0 }; recentStages.set(v, stage); }
   for (const id of stage.pending.keys()) if (!ids.has(id)) stage.pending.delete(id);
@@ -518,7 +542,11 @@ function renderRecent(v: View, rs: RaceState[]) {
     } else {
       el.style.transform = `translateY(${y}px)`;
     }
-    if (el.dataset.result !== resultSignature(r)) {
+    if (!el.dataset.result && !b?.page && (changedAt.get(`${v.c.key}:${r.seed.id}`) ?? 0) < LAUNCHED_AT) {
+      // Restored from an earlier launch: show as is, no reveal or flash.
+      el.dataset.result = resultSignature(r);
+      paintRow(el, r);
+    } else if (el.dataset.result !== resultSignature(r)) {
       // Existing rows retain their previous figures until their turn.
       if (!el.dataset.result) el.style.visibility = 'hidden';
       stage.pending.set(r.seed.id, r);
@@ -538,8 +566,46 @@ function renderRecent(v: View, rs: RaceState[]) {
   }
   v.el.siste.querySelector<HTMLElement>('.empty')!.hidden = shown.length > 0;
   const sub = frame.querySelector<HTMLElement>('.sub[data-s="siste"]');
-  if (sub && current.key === v.c.key) sub.hidden = !shown.length;
+  if (sub && current.key === v.c.key) {
+    sub.hidden = !(hasContent(v.c.key, 'siste') || current.sub === 'siste');
+    sub.querySelector<HTMLElement>('.cnt')!.textContent = pageLabel(v.c.key);
+  }
 }
+
+/** "1/3" while paging: this page, and how many it takes to show what is queued. */
+function pageLabel(key: Key) {
+  const b = batches[key];
+  if (!b?.page) return '';
+  const total = b.pageNo + Math.ceil(b.queue.length / ROWS);
+  return total > 1 ? ` ${b.pageNo}/${total}` : '';
+}
+
+/** The next page of changed races to show (Senate, House), or null when everything queued has been shown. */
+function nextPage(): Key | null {
+  const onScreen = isContest(current.key) && current.sub === 'siste' ? current.key : null;
+  for (const k of PAGED) {
+    const b = batches[k]!;
+    const counting = new Set(prev?.races[k].filter((r) => r.status === 'counting').map((r) => r.seed.id));
+    // Races called since they were queued got their own call screen.
+    b.queue = b.queue.filter((id) => counting.has(id));
+  }
+  // Whichever contest has waited longest goes next, so a busy House can't hold back the Senate.
+  const waited = (k: Key) => batches[k]!.queuedAt.get(batches[k]!.queue[0]) ?? Infinity;
+  const order = PAGED.filter((k) => batches[k]!.queue.length).sort((a, b) => waited(a) - waited(b));
+  for (const k of order) {
+    const b = batches[k]!;
+    b.pageNo = k === onScreen && b.page ? b.pageNo + 1 : 1;
+    b.page = b.queue.splice(0, ROWS);
+    for (const id of b.page) b.queuedAt.delete(id);
+    for (const other of PAGED) if (other !== k) { batches[other]!.page = null; batches[other]!.pageNo = 0; }
+    return k;
+  }
+  for (const k of PAGED) { batches[k]!.page = null; batches[k]!.pageNo = 0; }
+  return null;
+}
+
+/** How long the page on screen is held. */
+const holdMs = () => (isContest(current.key) && current.sub === 'siste' && batches[current.key]?.page ? NEW_HOLD_MS : HOLD_MS);
 
 function renderFlips(v: View, rs: RaceState[]) {
   const f = flips(rs).sort((a, b) => (b.calledAt ?? 0) - (a.calledAt ?? 0));
@@ -816,7 +882,8 @@ let auto = q.get('auto') !== '0';
 function hasContent(key: TabKey, sub: string): boolean {
   if (key === 'stenger') return closingsLeft();
   if (key === 'stater' && sub === 'folkevalg') return stateMeasures.some((m) => m.state === activeState);
-  if (isContest(key) && sub === 'siste') return !!prev && recentOf(key, prev.races[key]).length > 0;
+  // Senate and House: only while paging through new numbers (everything else has been shown already).
+  if (isContest(key) && sub === 'siste') return batches[key] ? !!(batches[key]!.page || batches[key]!.queue.length) : !!prev && recentOf(key, prev.races[key]).length > 0;
   if (key === 'stater' || sub !== 'skifter' || !prev) return true;
   return flips(prev.races[key]).length > 0;
 }
@@ -844,7 +911,8 @@ function go(key: TabKey, sub: string) {
     frame.querySelector<HTMLElement>('.sub[data-s="folkevalg"]')!.hidden = !hasContent(key, 'folkevalg');
   }
   if (key === 'stenger') renderClosings();
-  if (isContest(key)) frame.querySelector<HTMLElement>('.sub[data-s="siste"]')!.hidden = !hasContent(key, 'siste');
+  if (isContest(key)) frame.querySelector<HTMLElement>('.sub[data-s="siste"]')!.hidden = !(hasContent(key, 'siste') || sub === 'siste');
+  if (isContest(key)) frame.querySelector<HTMLElement>('.sub[data-s="siste"] .cnt')!.textContent = pageLabel(key);
   // The race tabs credit their numbers up here; the other pages credit their sources at the foot.
   $('source').hidden = !isContest(key);
   $('sample').hidden = !isContest(key) || mode !== 'demo';
@@ -869,7 +937,7 @@ function go(key: TabKey, sub: string) {
     const fill = s.querySelector<HTMLElement>('.fill')!;
     fill.style.transition = 'none';
     fill.style.width = '0';
-    if (on && auto && !holding) nextFrame(() => { fill.style.transition = `width ${HOLD_MS}ms linear`; fill.style.width = '100%'; });
+    if (on && auto && !holding) nextFrame(() => { fill.style.transition = `width ${holdMs()}ms linear`; fill.style.width = '100%'; });
   });
   if (prev && isContest(key)) renderFlips(views[key], prev.races[key]);
   schedule();
@@ -897,8 +965,14 @@ function advance() {
       return;
     }
   }
-  // New numbers just came in: show them, on the contest with the most changes.
-  // At most one jump per three pages, so a feed that changes every tick can't pin the board to one page.
+  // Senate and House: page through every race the updates changed before anything else.
+  const paged = nextPage();
+  if (paged) {
+    renderRecent(views[paged], prev!.races[paged]);
+    go(paged, 'siste');
+    return;
+  }
+  // Governors: show their new numbers, at most one jump per three pages.
   const jump = pendingJump;
   pendingJump = null;
   if (jump && current.sub !== 'siste' && Date.now() - lastJump > 3 * HOLD_MS && hasContent(jump, 'siste')) {
@@ -926,7 +1000,7 @@ let lastJump = 0;
 let holding = false;
 function schedule() {
   clearTimeout(rotateTimer);
-  if (auto && !holding && playing) rotateTimer = window.setTimeout(advance, HOLD_MS);
+  if (auto && !holding && playing) rotateTimer = window.setTimeout(advance, holdMs());
 }
 
 /* ================================================================= cards */
@@ -1358,6 +1432,7 @@ const sampleSnapshot = (t: number): Snapshot => ({
 function reset() {
   for (const stage of recentStages.values()) clearTimeout(stage.timer);
   recentStages.clear();
+  for (const b of Object.values(batches)) { b!.queue.length = 0; b!.queuedAt.clear(); b!.page = null; b!.pageNo = 0; }
   prev = null;
   queue.length = 0;
   pauseTicker();
@@ -1490,6 +1565,8 @@ const FEED = q.get('feed') ?? 'https://civicapi.org';
 const feedUpdated: Partial<Record<Key, number>> = {};
 const feedSeen = new Set<Key>();
 const feedErrors = new Set<Key>();
+/** Set while applying a contest's first poll of this launch (and nothing was restored for it). */
+let baselineKey: Key | null = null;
 async function getJSON(path: string): Promise<CivicRace> {
   // Keep the timeout active through reading/parsing the response body.
   let timer: ReturnType<typeof setTimeout>;
@@ -1521,7 +1598,8 @@ async function pollContest(key: Key) {
     if (feedUpdated[key] && Number.isFinite(updated) && updated < feedUpdated[key]!) return;
     // The initial waiting frame is already our baseline: announce calls in the
     // first response as well as subsequent updates, once per call transition.
-    applyFeed({ [key]: races });
+    baselineKey = feedSeen.has(key) ? null : key;
+    try { applyFeed({ [key]: races }); } finally { baselineKey = null; }
     feedSeen.add(key);
     feedUpdated[key] = Number.isFinite(updated) ? updated : 0;
     feedErrors.delete(key);
