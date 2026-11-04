@@ -20,7 +20,10 @@ export type Kind = 'senat' | 'huset' | 'guv';
 
 export interface FeedRace {
   id: string;
+  /** Share of the expected vote counted, 0..1; 0 also when the feed doesn't say. */
   reported: number;
+  /** Votes counted so far, when the feed gives them. */
+  votes?: number;
   dem: number;
   status: RaceState['status'];
   winner?: Party;
@@ -134,6 +137,64 @@ export function parseResults(res: { races?: Record<string, ResRace> }): Feed {
       calledBy: r.called_by ?? undefined,
       src: r.src ?? undefined,
     });
+  }
+  return out;
+}
+
+/*
+ * /api/live: the live bundle the site itself polls. On election night the
+ * numbers show up here well before /data/results.json is published.
+ *
+ *   { at, ev, res: { GA: { src, url, asOf, races: { "S-GA": race } } }, st: { GA: { feed, mode } } }
+ *   race = { status, votes, cands: [[name, pct, votes, party, winner?]], rep: { u, t, unit }, contest }
+ *
+ * `rep` counts reporting units (counties, towns, precincts) and is often null;
+ * there is no expected-vote figure. `ev` is early-vote data under a different
+ * licence (CC BY-NC-ND) and is not used.
+ */
+type LiveCand = [string, number, number, string, unknown?];
+interface LiveRace {
+  status?: string; votes?: number; cands?: LiveCand[]; rep?: { u?: number | null; t?: number | null };
+  winner?: string; called_by?: string; calledBy?: string;
+}
+interface Live { res?: Record<string, { src?: string; races?: Record<string, LiveRace> }>; st?: Record<string, { mode?: string }> }
+
+/** Live party codes -> the ones core.json uses; write-ins ("") are dropped. */
+const liveParty = (p: string) => (p === 'INDEPENDENT' ? 'I' : p);
+
+/** Numbers per race from /api/live, in the same shape as parseResults. */
+export function parseLive(live: Live): Feed {
+  const out: Feed = {};
+  for (const [st, block] of Object.entries(live.res ?? {})) {
+    // Before polls close a state's feed runs "dry": anything in it is test data.
+    if (live.st?.[st]?.mode === 'dry') continue;
+    for (const [key, r] of Object.entries(block.races ?? {})) {
+      const m = /^([SGH])-(.+)$/.exec(key);
+      const where = m && ourId(m[1], m[2]);
+      if (!where || !r.cands?.length) continue;
+      const cands = r.cands.filter((c) => c[3]).map(([name, , votes, party, won]) => ({ name, party: liveParty(party), votes: votes ?? 0, won: !!won }));
+      if (!cands.length) continue;
+      const s = slots(cands, (c) => c.votes);
+      const dv = s.D?.votes ?? 0;
+      const rv = s.R?.votes ?? 0;
+      const total = cands.reduce((a, c) => a + c.votes, 0);
+      // No call seen in this feed yet; accept a winner flag on a candidate, or a named winner or party on the race.
+      const w = (r.winner ?? '').toLowerCase();
+      const won = cands.find((c) => c.won) ?? (w ? cands.find((c) => c.name.toLowerCase() === w || c.party.toLowerCase() === w) : undefined);
+      const winner: Party | undefined = won ? (won === s.R ? 'R' : won === s.D ? 'D' : undefined) : undefined;
+      const status: RaceState['status'] = winner ? 'called' : total > 0 ? 'counting' : 'waiting';
+      const { u, t } = r.rep ?? {};
+      (out[where.kind] ??= []).push({
+        id: where.id,
+        status,
+        winner,
+        reported: u != null && t ? Math.min(1, u / t) : 0,
+        votes: total,
+        dem: dv + rv > 0 ? (dv / (dv + rv)) * 100 : 50,
+        calledBy: r.called_by ?? r.calledBy ?? undefined,
+        src: block.src,
+      });
+    }
   }
   return out;
 }

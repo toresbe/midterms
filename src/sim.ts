@@ -5,8 +5,10 @@ export type Status = 'waiting' | 'counting' | 'called';
 export interface RaceState {
   seed: RaceSeed;
   status: Status;
-  /** Share of the expected vote counted so far, 0..1. */
+  /** Share of the expected vote counted so far, 0..1 (0 when the feed doesn't say). */
   reported: number;
+  /** Votes counted so far (live data only). */
+  votes?: number;
   /** Current Democratic share of the counted two-party vote, percent. */
   dem: number;
   winner?: Party;

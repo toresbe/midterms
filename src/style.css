@@ -387,3 +387,6 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 .row .cn.none .pc { visibility: hidden; }
 .tc.none .tn { color: var(--faint); font-weight: 500; font-style: italic; }
 .ts.on .tc.none { opacity: 1; transform: none; transition-delay: 900ms; }
+
+/* Counted share unknown (live feed without reporting units): the split, dimmed */
+.row.unk .mini .md, .row.unk .mini .mr { opacity: 0.45; }

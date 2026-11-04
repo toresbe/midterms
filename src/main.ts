@@ -4,7 +4,7 @@ import {
   type Party, type RaceSeed, type Candidate, type Side,
 } from './data';
 import { raceAt, tally, partyOf, winnerParty, isFlip, type ChamberTally, type RaceState } from './sim';
-import { parseCore, parseResults, type Feed } from './peoplestally';
+import { parseCore, parseResults, parseLive, type Feed } from './peoplestally';
 import { findPortraits, isWiki } from './portraits';
 import { FACTS, NORWAY_KM2 } from './states';
 import MEASURES from './measures.json';
@@ -360,9 +360,14 @@ function paintRow(el: HTMLElement, r: RaceState) {
   const [dv, rv] = el.querySelectorAll<HTMLElement>('.cn .pc');
   countTo(dv, r.dem, pct1, 700);
   countTo(rv, 100 - r.dem, pct1, 700);
-  countTo(el.querySelector<HTMLElement>('.ct')!, r.reported * 100, (n) => `${pct0(n)} talt`, 700);
+  // The live feed often doesn't say how much is counted: then give the vote count, and draw the split dimmed.
+  const known = r.reported > 0;
+  const ct = el.querySelector<HTMLElement>('.ct')!;
+  if (known) countTo(ct, r.reported * 100, (n) => `${pct0(n)} talt`, 700);
+  else { delete ct.dataset.v; ct.textContent = r.votes ? `${nbInt(r.votes)} st.` : ''; }
+  el.classList.toggle('unk', !known);
   // Each side grows from its own end; the gap in the middle is the vote not yet counted.
-  const share = r.reported * 100;
+  const share = known ? r.reported * 100 : 100;
   (el.querySelector('.md') as HTMLElement).style.width = `${(r.dem / 100) * share}%`;
   (el.querySelector('.mr') as HTMLElement).style.width = `${((100 - r.dem) / 100) * share}%`;
   if (r.status === 'called' && r.winner && !el.classList.contains('called')) {
@@ -898,7 +903,7 @@ function candidatesStep(r: RaceState): Step {
     return c?.photoCredit ? [c.photoCredit] : isWiki(c?.photo) ? ['Wikipedia / Wikimedia Commons'] : [];
   }))];
   const credit = [r.calledBy && `Utropt av ${r.calledBy}`, r.src && `Tall: ${r.src}`, photoCredits.length && `Foto: ${photoCredits.join(', ')}`].filter(Boolean).join(' &middot; ');
-  return { ms: 7500, html: `<div class="tcs">${cand(w)}${l === w ? `<div class="tc none"><div class="tn">${NO_CAND}</div></div>` : cand(l)}</div><div class="tfoot num">${pct0(r.reported * 100)} av forventede stemmer er talt${credit ? ` &middot; ${credit}` : ''}</div>` };
+  return { ms: 7500, html: `<div class="tcs">${cand(w)}${l === w ? `<div class="tc none"><div class="tn">${NO_CAND}</div></div>` : cand(l)}</div><div class="tfoot num">${r.reported > 0 ? `${pct0(r.reported * 100)} av forventede stemmer er talt` : r.votes ? `${nbInt(r.votes)} stemmer talt` : 'Andel opptalt ukjent'}${credit ? ` &middot; ${credit}` : ''}</div>` };
 }
 
 function tilesStep(races: RaceState[]): Step {
@@ -1046,7 +1051,7 @@ function renderLatest() {
     return;
   }
   const races = prev ? CONTESTS.flatMap((c) => prev!.races[c.key]) : [];
-  const reporting = races.filter((r) => r.reported > 0).length;
+  const reporting = races.filter((r) => r.status !== 'waiting').length;
   const called = races.filter((r) => r.status === 'called').length;
   el.innerHTML = `<span class="k">Opptelling</span><span>${reporting || called
     ? `Stemmetall fra ${reporting} av ${races.length} løp · ${called} avgjort`
@@ -1237,7 +1242,7 @@ function applyFeed(feed: Feed, quiet = false) {
         if (f.candidates && f.status === 'waiting') return named;
         // State feeds may post test numbers before their polls close; never show those.
         if (q.get('early') !== '1' && etHours(new Date()) < seed.closesET) return named;
-        return { seed, reported: f.reported, dem: f.dem, status: f.status, winner: f.winner, calledBy: f.calledBy, src: f.src,
+        return { seed, reported: f.reported, votes: f.votes, dem: f.dem, status: f.status, winner: f.winner, calledBy: f.calledBy, src: f.src,
           calledAt: r.calledAt ?? (f.status === 'called' ? Date.now() : undefined) };
       })];
     })) as Record<Key, RaceState[]>,
@@ -1276,12 +1281,31 @@ function fillPortraits() {
       .map((c) => ({ c, state: STATE_NAME[r.seed.state], statewide: k !== 'huset' }))));
   findPortraits(jobs, () => { if (prev) apply({ ...prev, when: new Date(), quiet: true }); });
 }
+/** Races results.json has published ("senat:GA"): those win over /api/live. */
+let inResults = new Set<string>();
 async function pollResults() {
   try {
     // The first load is the starting point: a template started mid-evening shouldn't replay every call.
-    applyFeed(parseResults(await getJSON('/data/results.json')), !lastData);
+    const feed = parseResults(await getJSON('/data/results.json'));
+    inResults = new Set(CONTESTS.flatMap((c) => (feed[c.key] ?? []).map((r) => `${c.key}:${r.id}`)));
+    applyFeed(feed, !lastData);
     lastData = Date.now();
   } catch (e) { console.warn('results.json', e); }
+  showSource();
+}
+/** Live numbers come out in /api/live before results.json is published; use them for races results.json doesn't have. */
+let liveSeen = false;
+async function pollLive() {
+  try {
+    const feed = parseLive(await getJSON('/api/live'));
+    for (const c of CONTESTS) feed[c.key] = feed[c.key]?.filter((r) => !inResults.has(`${c.key}:${r.id}`));
+    applyFeed(feed, !liveSeen);
+    liveSeen = true;
+    lastData = Date.now();
+  } catch (e) { console.warn('api/live', e); }
+  showSource();
+}
+function showSource() {
   if (mode === 'live') {
     // Name the source, and say so if it has gone quiet.
     const stale = Date.now() - lastData > 5 * 60_000;
@@ -1297,6 +1321,9 @@ function startFeed() {
   void pollResults();
   // The People's Tally refreshes results about once a minute; 30 s is polite and timely.
   setInterval(pollResults, 30_000);
+  // Their docs ask for /api/live no more than once a minute.
+  void pollLive();
+  setInterval(pollLive, 60_000);
 }
 
 /* First frame: no cards for what came before. */

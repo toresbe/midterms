@@ -107,6 +107,13 @@ By default the template reads The People's Tally open data itself
 - `/data/results.json`, every 30 s: votes per candidate become two-party
   shares, `votes / exp` the share counted, a `winner` flag a call. The call
   screen names who called it (`called_by`) and the source (`src`).
+- `/api/live`, every 60 s (their docs ask for no faster): the live bundle the
+  site itself polls. On election night numbers appear here long before
+  results.json is published, so races results.json doesn't have yet come from
+  here. States whose feed is still "dry" (before polls close) are skipped.
+  There is no expected-vote figure: the share counted is reporting units
+  (counties, towns) when given, otherwise unknown, and rows show the vote count
+  instead of "% talt". Its `ev` (early votes) is CC BY-NC-ND and is not used.
 - Numbers for a race are ignored until its polls have closed (state feeds may
   post test data before then; `?early=1` turns this off for testing).
 - The first real numbers switch the board to live; the credit reads "The
