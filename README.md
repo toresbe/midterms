@@ -29,7 +29,7 @@ feed only.
   with "Vi viser valgdata fra civicAPI som en tjeneste til våre seere"
   under it (in demo mode it says the numbers are invented instead)
 - "Mellomvalg" and the tabs, the source credit
-- Senate and House headers show live Democratic and Republican seat totals
+- Senate, House, and governor headers show live Democratic and Republican seat totals
   (holdovers plus called winners), independents when present, and undecided seats.
 - Clocks: New York, Chicago, Denver, Los Angeles, Alaska, Hawaii (12-hour) and
   Oslo station time (24-hour)
