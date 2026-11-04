@@ -3,8 +3,8 @@ import {
   SENATE_SEEDS, SENATE_HOLDOVER, GOV_SEEDS, GOV_HOLDOVER, houseSeeds, STATE_NAME, POLLS, etClock,
   type Party, type RaceSeed, type Candidate, type Side,
 } from './data';
-import { raceAt, tally, partyOf, winnerParty, isFlip, type ChamberTally, type RaceState } from './sim';
-import { parseCore, parseResults, parseLive, type Feed } from './peoplestally';
+import { raceAt, tally, partyOf, winnerParty, isFlip, closestRaces, newlyCalledRaces, type ChamberTally, type RaceState } from './sim';
+import { CIVIC_RACES, parseCivicRace, type CivicRace, type Feed } from './civicapi';
 import { findPortraits, isWiki } from './portraits';
 import { FACTS, NORWAY_KM2 } from './states';
 import MEASURES from './measures.json';
@@ -104,7 +104,7 @@ const abbr = (z: string, d: Date) => abbrFmt.get(z)!.formatToParts(d).find((p) =
 const frame = document.getElementById('frame')!;
 frame.innerHTML = `
 <div class="safe">
-  <div class="notice"><span class="l1">Ordinære sendinger utgår &ndash; se <b>frikanalen.no/protest</b> for informasjon</span><span class="l2" id="service">Vi viser valgdata fra People&rsquo;s Tally som en tjeneste til våre seere</span></div>
+  <div class="notice"><span class="l1">Ordinære sendinger utgår &ndash; se <b>frikanalen.no/protest</b> for informasjon</span><span class="l2" id="service">Vi viser valgdata fra <a href="https://civicapi.org/" target="_blank" rel="noopener noreferrer">civicAPI</a> som en tjeneste til våre seere</span></div>
   <header class="head">
     <div class="title">Mellomvalg</div>
     <nav class="tabs" id="tabs">
@@ -301,7 +301,7 @@ function photo(c: Candidate | null, p: Party, cls = '', party: Side = p) {
 }
 const surname = (c: Candidate | null, p: Party) =>
   c ? c.name.replace(/\s+(Jr\.?|Sr\.?|II|III|IV)$/, '').split(/\s+/).slice(-1)[0] : `${ABBR[p]} kandidat`;
-/** No one on the ballot in this slot (known from core.json, so never in demo mode). */
+/** No one on the ballot in this slot (known from the feed, never in demo mode). */
 const noCand = (r: RaceState, p: Party) => mode !== 'demo' && !!r.seed.unopposed && r.seed.unopposed !== p;
 const NO_CAND = 'Uten motkandidat';
 const slotPhoto = (r: RaceState, p: Party) => (noCand(r, p) ? `<span class="ph none" data-slot="${p}"></span>` : photo(who(r, p), p, '', partyOf(r, p)));
@@ -338,7 +338,7 @@ function rowFor(v: View, r: RaceState): HTMLElement {
 }
 
 function paintRow(el: HTMLElement, r: RaceState) {
-  // Names and photos can arrive after the row was built (core.json loads in the background).
+  // Names and photos can arrive after the row was built (the feed loads in the background).
   const ck = JSON.stringify([who(r, 'D'), who(r, 'R'), r.seed.unopposed]);
   if (el.dataset.cand !== ck) {
     el.dataset.cand = ck;
@@ -389,11 +389,7 @@ function renderClosest(v: View, rs: RaceState[], now: number) {
   }
   for (const [id, l] of v.lingering) if (now > l.until) v.lingering.delete(id);
 
-  const counting = rs.filter((r) => r.status === 'counting' && !v.lingering.has(r.seed.id))
-    .sort((a, b) => Math.abs(a.dem - 50) - Math.abs(b.dem - 50));
-  const waiting = rs.filter((r) => r.status === 'waiting')
-    .sort((a, b) => a.seed.closesET - b.seed.closesET || a.seed.name.localeCompare(b.seed.name));
-  const order = [...counting, ...waiting];
+  const order = closestRaces(rs, mode === 'demo').filter((r) => !v.lingering.has(r.seed.id));
   for (const l of [...v.lingering.values()].sort((a, b) => a.index - b.index)) order.splice(Math.min(l.index, order.length), 0, l.race);
   const shown = order.slice(0, ROWS);
   const ids = new Set(shown.map((r) => r.seed.id));
@@ -415,7 +411,10 @@ function renderClosest(v: View, rs: RaceState[], now: number) {
     setTimeout(() => { el.remove(); v.rows.delete(id); }, 600);
   }
   v.lastOrder = shown.filter((r) => r.status === 'counting' || v.lingering.has(r.seed.id)).map((r) => r.seed.id);
-  v.el.jevne.querySelector<HTMLElement>('.empty')!.hidden = shown.length > 0;
+  const empty = v.el.jevne.querySelector<HTMLElement>('.empty')!;
+  empty.hidden = shown.length > 0;
+  empty.textContent = rs.every((r) => r.status === 'called')
+    ? 'Alle løp er avgjort.' : 'Venter på stemmetall og kandidatnavn.';
 }
 
 function renderFlips(v: View, rs: RaceState[]) {
@@ -524,7 +523,7 @@ const STATE_ORDER = Object.keys(FACTS);
 let pendingState: string | null = null;
 const shownStates = new Set<string>();
 let activeState: string | null = null;
-let stateMeasures = parseMeasures(MEASURES);
+const stateMeasures = parseMeasures(MEASURES);
 let measurePage = 0;
 const MEASURES_PER_PAGE = 2;
 const escapeHTML = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -632,7 +631,7 @@ function renderStateElection(st: string) {
         return `<span class="state-house-chip${won ? ` won ${party!.toLowerCase()}` : counting ? ' counting' : ' waiting'}" style="--share:${share}%;--counted:${race.status === 'waiting' ? 0 : stateReported(race)}%;--left:var(--${partyOf(race, 'D').toLowerCase()}-soft);--right:var(--${partyOf(race, 'R').toLowerCase()}-soft)" aria-label="${escapeHTML(label)}" title="${escapeHTML(label)}"><span class="state-chip-text">${won ? '✓ ' : ''}${escapeHTML(race.seed.id)} <b>${percent}</b></span><span class="state-count-progress" aria-hidden="true"></span></span>`;
       }).join('')}</div>
     </div>
-    ${pageCredit('Kandidater: The People&rsquo;s Tally / Wikipedia &middot; ✓ Vinner &middot; % og fremdrift = andel opptalt')}
+    ${pageCredit('Valgdata: <a href="https://civicapi.org/" target="_blank" rel="noopener noreferrer">civicAPI</a> / Wikipedia (reserve) &middot; ✓ Vinner &middot; fremdrift: rapportering')}
   </div>`;
 }
 
@@ -808,7 +807,7 @@ function enqueue(cards: Card[]) {
     const by = new Map<Key, { races: RaceState[]; flipsOnly: boolean }>();
     for (const c of rest) {
       const g = by.get(c.c.key) ?? { races: [], flipsOnly: true };
-      if (c.kind === 'call') { g.races.push(c.race); g.flipsOnly = false; }
+      if (c.kind === 'call' || c.kind === 'callband') { g.races.push(c.race); g.flipsOnly = false; }
       if (c.kind === 'batch') { g.races.push(...c.races); g.flipsOnly &&= !!c.flipsOnly; }
       by.set(c.c.key, g);
     }
@@ -1093,14 +1092,14 @@ function apply(snap: Snapshot) {
   renderLatest();
   const cards: Card[] = [];
   for (const c of CONTESTS) {
-    const before = new Map(old.races[c.key].map((r) => [r.seed.id, r]));
-    const called = snap.races[c.key].filter((r) => r.status === 'called' && before.get(r.seed.id)?.status !== 'called');
+    const called = newlyCalledRaces(old.races[c.key], snap.races[c.key]);
     if (c.key === 'huset') {
-      // 435 races: only seats changing hands get a card.
-      const f = called.filter(isFlip);
-      if (f.length) cards.push({ kind: 'batch', c, races: f, flipsOnly: true });
+      // Announce holds too; batch simultaneous calls to keep up with 435 races.
+      if (called.length === 1) cards.push({ kind: 'call', c, race: called[0] });
+      else if (called.length > 1) cards.push({ kind: 'batch', c, races: called });
     } else {
       // Calls made the moment polls close are expected; announce them together.
+      const before = new Map(old.races[c.key].map((r) => [r.seed.id, r]));
       const atClose = called.filter((r) => before.get(r.seed.id)?.status === 'waiting');
       const later = called.filter((r) => before.get(r.seed.id)?.status !== 'waiting')
         .sort((a, b) => Number(isFlip(b)) - Number(isFlip(a)));
@@ -1223,56 +1222,51 @@ function goLive() {
 }
 
 /** Merge a feed (candidates and/or numbers) onto the board and animate the difference. */
-function applyFeed(feed: Feed, quiet = false) {
-  const hasNumbers = CONTESTS.some((c) => (feed[c.key] ?? []).some((f) => f.status !== 'waiting'));
+function applyFeed(feed: Feed) {
+  const now = etHours(new Date());
+  const hasNumbers = CONTESTS.some((c) => (feed[c.key] ?? []).some((f) => f.status !== 'waiting'
+    && c.seeds.some((s) => s.id === f.id && (q.get('early') === '1' || now >= s.closesET))));
   if (hasNumbers) goLive();
   if (mode === 'demo') return;
   const base = prev ?? waitingSnapshot();
   apply({
     when: new Date(),
-    quiet,
     races: Object.fromEntries(CONTESTS.map((c) => {
       const byId = new Map((feed[c.key] ?? []).map((r) => [r.id, r]));
       return [c.key, base.races[c.key].map((r) => {
         const f = byId.get(r.seed.id);
         if (!f) return r;
-        // Core brings names without results; manual pushes may include both.
+        // Production payloads carry both candidates and results; manual pushes may include either.
         const seed = f.candidates ? { ...r.seed, incumbent: f.incumbent ?? r.seed.incumbent, cand: { ...r.seed.cand, ...f.candidates }, unopposed: f.unopposed } : r.seed;
         const named = seed === r.seed ? r : { ...r, seed };
-        if (f.candidates && f.status === 'waiting') return named;
         // State feeds may post test numbers before their polls close; never show those.
         if (q.get('early') !== '1' && etHours(new Date()) < seed.closesET) return named;
         return { seed, reported: f.reported, votes: f.votes, dem: f.dem, status: f.status, winner: f.winner, calledBy: f.calledBy, src: f.src,
-          calledAt: r.calledAt ?? (f.status === 'called' ? Date.now() : undefined) };
+          calledAt: f.status === 'called' ? r.calledAt ?? Date.now() : undefined };
       })];
     })) as Record<Key, RaceState[]>,
   });
   fillPortraits();
 }
 
-const FEED = q.get('feed') ?? 'https://thepeoplestally.com';
-let lastData = 0;
-async function getJSON(path: string) {
-  // A plain fetch with a timeout race: no AbortSignal, because some hosts
-  // (the Claude app's viewer among them) proxy fetch and cannot clone one.
-  const timeout = new Promise<never>((_, no) => setTimeout(() => no(new Error('timeout')), 15_000));
-  const res = await Promise.race([fetch(FEED.replace(/\/$/, '') + path), timeout]);
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
-}
-async function pollCore() {
+const FEED = q.get('feed') ?? 'https://civicapi.org';
+// Track provider timestamps per contest: a successful fetch can still contain old data.
+const feedUpdated: Partial<Record<Key, number>> = {};
+const feedSeen = new Set<Key>();
+const feedErrors = new Set<Key>();
+async function getJSON(path: string): Promise<CivicRace> {
+  // Keep the timeout active through reading/parsing the response body.
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, no) => {
+    timer = setTimeout(() => no(new Error('timeout')), 15_000);
+  });
   try {
-    const core = await getJSON('/data/core.json');
-    applyFeed(parseCore(core));
-    if (typeof core.meas === 'string') stateMeasures = parseMeasures(core);
-    if (activeState) {
-      renderStateElection(activeState);
-      const count = stateMeasures.filter((m) => m.state === activeState).length;
-      measurePage = Math.min(measurePage, Math.max(0, Math.ceil(count / MEASURES_PER_PAGE) - 1));
-      renderStateMeasures(activeState);
-      if (current.key === 'stater') go('stater', current.sub);
-    }
-  } catch (e) { console.warn('core.json', e); return; }
+    return await Promise.race([(async () => {
+      const res = await fetch(FEED.replace(/\/$/, '') + path);
+      if (!res.ok) throw new Error(`${res.status}`);
+      return await res.json();
+    })(), timeout]);
+  } finally { clearTimeout(timer!); }
 }
 function fillPortraits() {
   if (!prev || mode === 'demo' || q.get('photos') === '0') return;
@@ -1281,60 +1275,59 @@ function fillPortraits() {
       .map((c) => ({ c, state: STATE_NAME[r.seed.state], statewide: k !== 'huset' }))));
   findPortraits(jobs, () => { if (prev) apply({ ...prev, when: new Date(), quiet: true }); });
 }
-/** Races results.json has published ("senat:GA"): those win over /api/live. */
-let inResults = new Set<string>();
-async function pollResults() {
+async function pollContest(key: Key) {
   try {
-    // The first load is the starting point: a template started mid-evening shouldn't replay every call.
-    const feed = parseResults(await getJSON('/data/results.json'));
-    inResults = new Set(CONTESTS.flatMap((c) => (feed[c.key] ?? []).map((r) => `${c.key}:${r.id}`)));
-    applyFeed(feed, !lastData);
-    lastData = Date.now();
-  } catch (e) { console.warn('results.json', e); }
-  showSource();
-}
-/** Live numbers come out in /api/live before results.json is published; use them for races results.json doesn't have. */
-let liveSeen = false;
-async function pollLive() {
-  try {
-    const feed = parseLive(await getJSON('/api/live'));
-    for (const c of CONTESTS) feed[c.key] = feed[c.key]?.filter((r) => !inResults.has(`${c.key}:${r.id}`));
-    applyFeed(feed, !liveSeen);
-    liveSeen = true;
-    lastData = Date.now();
-  } catch (e) { console.warn('api/live', e); }
+    const data = await getJSON(`/api/v2/race/${CIVIC_RACES[key]}`);
+    const races = parseCivicRace(key, data);
+    if (!races.length) throw new Error('No usable races in civicAPI response');
+    const updated = Date.parse(data.last_updated ?? '');
+    // Do not roll results back when an upstream cache serves an older snapshot.
+    if (feedUpdated[key] && Number.isFinite(updated) && updated < feedUpdated[key]!) return;
+    // The initial waiting frame is already our baseline: announce calls in the
+    // first response as well as subsequent updates, once per call transition.
+    applyFeed({ [key]: races });
+    feedSeen.add(key);
+    feedUpdated[key] = Number.isFinite(updated) ? updated : 0;
+    feedErrors.delete(key);
+  } catch (e) {
+    feedErrors.add(key);
+    console.warn(`civicAPI ${key}`, e);
+  }
   showSource();
 }
 function showSource() {
-  if (mode === 'live') {
-    // Name the source, and say so if it has gone quiet.
-    const stale = Date.now() - lastData > 5 * 60_000;
-    $('source').textContent = stale
-      ? `Ingen nye tall siden ${lastData ? osloFmt.format(new Date(lastData)) : 'start'}`
-      : "The People\u2019s Tally (CC BY 4.0) \u00b7 uoffisielle tall";
-  }
+  if (mode === 'demo') return;
+  const key = isContest(current.key) ? current.key : 'senat';
+  const updated = feedUpdated[key];
+  const stale = feedErrors.has(key) || !updated || Date.now() - updated > 5 * 60_000;
+  $('source').textContent = !feedSeen.has(key)
+    ? feedErrors.has(key) ? 'civicAPI · kan ikke hente tall' : 'civicAPI · venter på valgresultater'
+    : stale
+      ? `civicAPI · sist oppdatert ${updated ? osloFmt.format(new Date(updated)) : 'ukjent'}`
+      : 'civicAPI · uoffisielle tall';
 }
 function startFeed() {
   if (mode === 'demo' || FEED === 'off') return;
-  void pollCore();
-  setInterval(pollCore, 10 * 60_000);
-  void pollResults();
-  // The People's Tally refreshes results about once a minute; 30 s is polite and timely.
-  setInterval(pollResults, 30_000);
-  // Their docs ask for /api/live no more than once a minute.
-  void pollLive();
-  setInterval(pollLive, 60_000);
+  // Poll each contest independently: an outage must not stop the other feeds.
+  for (const c of CONTESTS) {
+    const poll = async () => {
+      await pollContest(c.key);
+      setTimeout(poll, 10_000);
+    };
+    void poll();
+  }
+  setInterval(showSource, 1000);
 }
 
 /* First frame: no cards for what came before. */
 if (mode === 'demo') {
   $('source').textContent = 'Demo: oppdiktede tall, kandidatnavn skjult';
-  // Don't credit People's Tally for invented numbers.
-  $('service').textContent = 'Demo med oppdiktede tall, ikke valgdata fra People\u2019s Tally';
+  // Demo must not present invented numbers as civicAPI results.
+  $('service').textContent = 'Demo med oppdiktede tall og skjulte kandidatnavn';
   apply(sampleSnapshot(clock));
 } else {
   $('sample').hidden = true;
-  $('source').textContent = 'Venter på valgresultater';
+  $('source').textContent = 'civicAPI · venter på valgresultater';
   apply(waitingSnapshot());
   fillPortraits();
 }

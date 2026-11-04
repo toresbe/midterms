@@ -5,7 +5,7 @@ export type Status = 'waiting' | 'counting' | 'called';
 export interface RaceState {
   seed: RaceSeed;
   status: Status;
-  /** Share of the expected vote counted so far, 0..1 (0 when the feed doesn't say). */
+  /** Reporting progress, 0..1 (0 when unknown); civicAPI reports precinct/batch progress. */
   reported: number;
   /** Votes counted so far (live data only). */
   votes?: number;
@@ -70,6 +70,25 @@ export interface ChamberTally {
 export const partyOf = (r: RaceState, slot: Party): Side => r.seed.cand[slot]?.party ?? slot;
 export const winnerParty = (r: RaceState): Side | undefined => (r.winner ? partyOf(r, r.winner) : undefined);
 export const isFlip = (r: RaceState) => r.status === 'called' && winnerParty(r) !== r.seed.incumbent;
+
+/** Announce each new call once, including a corrected winner or a reissued call. */
+export function newlyCalledRaces(before: RaceState[], after: RaceState[]): RaceState[] {
+  const previous = new Map(before.map((r) => [r.seed.id, r]));
+  return after.filter((r) => {
+    if (r.status !== 'called' || !r.winner) return false;
+    const old = previous.get(r.seed.id);
+    return old?.status !== 'called' || !old.winner || old.winner !== r.winner
+      || old.seed.cand[old.winner]?.name !== r.seed.cand[r.winner]?.name
+      || winnerParty(old) !== winnerParty(r);
+  });
+}
+
+/** Rank actual undecided counts, never waiting placeholders, as competitive races. */
+export function closestRaces(races: RaceState[], demo = false): RaceState[] {
+  return races.filter((r) => r.status === 'counting' && Number.isFinite(r.dem)
+    && (demo || (r.seed.cand.D?.name.trim() && r.seed.cand.R?.name.trim())))
+    .sort((a, b) => Math.abs(a.dem - 50) - Math.abs(b.dem - 50));
+}
 
 export function tally(races: RaceState[]): ChamberTally {
   const t: ChamberTally = { won: { D: 0, R: 0, I: 0 }, leading: { D: 0, R: 0, I: 0 }, waiting: 0, open: { D: 0, R: 0, I: 0 } };

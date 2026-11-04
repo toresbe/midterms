@@ -18,6 +18,18 @@ def jpeg():
 
 
 class SourceChecks(unittest.TestCase):
+    def test_civic_roster_uses_displayed_candidates_and_deduplicates_by_state(self):
+        data = {'races': {'huset': [
+            {'id': 'AK-1', 'candidates': {'D': None, 'R': {'name': 'Roster Test Person'}}},
+        ], 'senat': [
+            {'id': 'AK', 'candidates': {'D': {'name': 'Roster Test Person'}, 'R': None}},
+            {'id': 'AL', 'candidates': {'D': {'name': 'Roster Test Person'}, 'R': None}},
+        ]}}
+        people = fetch.roster(data)
+        self.assertEqual(people['Roster Test Person|AK']['races'], ['huset-AK-1', 'senat-AK'])
+        self.assertEqual(people['Roster Test Person|AL']['state'], 'AL')
+        self.assertEqual(people['Roster Test Person|AK']['bioguide'], '')
+
     def test_reviewed_source_reproduces_crop_and_attribution(self):
         data = jpeg()
         source = dict(source='https://campaign.example/about', image='https://campaign.example/portrait.jpg',

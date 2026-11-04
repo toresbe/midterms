@@ -35,12 +35,13 @@ export interface RaceSeed {
   skew: number;
   /** Nominees; null where unknown (House names come from the feed). */
   cand: Record<Party, Candidate | null>;
-  /** Set once core.json lists only one candidate: the slot that has one (the other side is unopposed). */
+  /** Set when the feed lists only one candidate: the slot that has one. */
   unopposed?: Party;
 }
 
 import CANDIDATES from './candidates.json';
 import POLL_DATA from './polls.json';
+import HOUSE_INCUMBENTS from './house-incumbents.json';
 
 type CandList = Record<string, Partial<Record<Party, string | null>>>;
 /** Nominees as listed on Wikipedia's 2026 Senate and governor election pages. */
@@ -72,7 +73,7 @@ export function etClock(t: string): number {
 
 /**
  * Poll closing times per state from The People's Tally (snapshot of core.json;
- * the template refreshes it from the feed). A state's first close is when
+ * retained as static reference data). A state's first close is when
  * results may start to appear.
  */
 export const POLLS = POLL_DATA as unknown as { polls: [string, string][]; stPolls: Record<string, [string, string][]> };
@@ -143,7 +144,7 @@ export function houseSeeds(): RaceSeed[] {
         state,
         name,
         closesET: CLOSES[state],
-        incumbent: finalDem + (rand() - 0.5) * 7 > 50 ? 'D' : 'R',
+        incumbent: HOUSE_INCUMBENTS.seats[`${state}-${d}` as keyof typeof HOUSE_INCUMBENTS.seats] as Side,
         finalDem,
         skew: (rand() - 0.4) * 8,
         cand: { D: null, R: null },

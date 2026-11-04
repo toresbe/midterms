@@ -1,6 +1,6 @@
 """Build an embedded portrait catalogue and an honest coverage report.
 
-python3 tools/portraits/fetch.py --core /tmp/core.json
+python3 tools/portraits/fetch.py --roster /tmp/civicapi-roster.json
 Requires Pillow (Debian/Ubuntu: python3-pil).
 Uses Python's normal TLS trust (SSL_CERT_FILE can supply a proxy CA).
 Reruns resume from index.json; --retry retries missing biographies/images.
@@ -101,7 +101,18 @@ def prefetch(jobs):
 
 def roster(core):
     people = {}
-    for line in core.get('races', '').splitlines():
+    # civicAPI rosters are produced by tools/civicapi/roster.mjs with the app's parser.
+    if isinstance(core.get('races'), dict):
+        for kind, races in core['races'].items():
+            for race in races:
+                state = race['id'][:2]
+                for c in race.get('candidates', {}).values():
+                    if c:
+                        key = c['name'] + '|' + state
+                        entry = people.setdefault(key, dict(name=c['name'], state=state, bioguide='', races=[]))
+                        entry['races'].append(kind + '-' + race['id'])
+    # Keep support for historical People's Tally snapshots used by earlier audits.
+    for line in (core.get('races', '') if isinstance(core.get('races'), str) else '').splitlines():
         fields = line.split('|')
         if len(fields) < 6 or fields[0] not in ('S', 'G', 'H'):
             continue
@@ -190,12 +201,14 @@ def fetch_person(item):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--core', required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--roster', help='civicAPI roster from tools/civicapi/roster.mjs')
+    source.add_argument('--core', help='legacy People\'s Tally core snapshot')
     parser.add_argument('--workers', type=int, default=4)
     parser.add_argument('--retry', action='store_true')
     parser.add_argument('--legislators', help='congress-legislators JSON directory for missing bioguide IDs')
     args = parser.parse_args()
-    core = json.loads(Path(args.core).read_text())
+    core = json.loads(Path(args.roster or args.core).read_text())
     people = roster(core)
     external_path = HERE / 'campaign-sources.json'
     if external_path.exists():
@@ -247,7 +260,7 @@ def main():
         return dict(key=key, name=candidate['name'], state=candidate['state'], races=candidate['races'],
                     checkedSources=list(dict.fromkeys(checked)),
                     errors=list(dict.fromkeys(errors)) or ['No usable verified portrait found from the checked sources'])
-    report = {'source': 'https://thepeoplestally.com/data/core.json', 'rosterUpdated': core.get('updated'),
+    report = {'source': core.get('source', 'https://thepeoplestally.com/data/core.json'), 'rosterUpdated': core.get('updated'),
               'total': len(people), 'available': len(catalogue),
               'currentFeed': {'total': len(current), 'available': sum(k in catalogue for k in current)},
               'missing': [missing_entry(k, c) for k, c in people.items() if k not in catalogue]}

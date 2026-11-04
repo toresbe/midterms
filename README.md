@@ -1,4 +1,4 @@
-# Mellomvalg (People's Tally prototype)
+# Mellomvalg (civicAPI)
 
 US midterms results board in Norwegian for a **1280x720 (720p50) CasparCG
 HTML channel**. Vite + TypeScript, no framework. `npm run build` gives one
@@ -11,21 +11,22 @@ background extends to the top and side edges to sit behind the channel bug.
 
 Three modes:
 - **Waiting (default):** real clocks, real nominees, "Stenger 7:00 PM EST" /
-  "Venter på tall" per race. No numbers until results are pushed.
+  "Venter på tall" per race. No numbers until live results arrive or are pushed manually.
 - **Demo (`?demo=1`):** replays an invented night to show the motion. Candidate
   names are hidden here, so no real person is shown next to an invented result.
-- **Live:** after the first `update()` push. Credits "Vi viser valgdata fra
-  People's Tally som en tjeneste til våre seere".
+- **Live:** after the first live feed results or `update()` push. Credits "Vi viser valgdata fra
+  civicAPI som en tjeneste til våre seere".
 
 Nominees for Senate and governor are in `src/candidates.json`, read from
-Wikipedia on 3 Nov 2026. The Senate page looked stale (newest data June 2026)
-and some nominees are missing (null); verify before air. The feed can override
-names and add photos per race (`candidates` below). House names come from the
+Wikipedia on 3 Nov 2026, with Florida Senate/governor names updated from
+civicAPI on 4 Nov. The Senate page looked stale (newest data June 2026)
+and some nominees are missing (null); verify before air. The live feed overrides
+names; manual pushes can add photos per race (`candidates` below). House names come from the
 feed only.
 
 ## Always on screen
 - Notice: "Ordinære sendinger utgår – se frikanalen.no/protest for informasjon",
-  with "Vi viser valgdata fra People's Tally som en tjeneste til våre seere"
+  with "Vi viser valgdata fra civicAPI som en tjeneste til våre seere"
   under it (in demo mode it says the numbers are invented instead)
 - "Mellomvalg" and the tabs, the source credit
 - Clocks: New York, Chicago, Denver, Los Angeles, Alaska, Hawaii (12-hour) and
@@ -33,13 +34,15 @@ feed only.
 
 ## Tabs and pages
 Senatet / Representantenes hus / Guvernører, each with Oversikt, Jevneste løp,
-Skifter parti. On Oversikt the seat bar fills from each end with seats won (solid)
+Skifter parti. Jevneste løp lists only races with vote counts and named
+opponents; waiting races do not fill spare rows. Demo mode hides names.
+On Oversikt the seat bar fills from each end with seats won (solid)
 and leading (soft); seats with no numbers yet are softly striped in the colour
 of the party holding them now, with a small legend under the bar. Then two tabs for quiet stretches:
 - **Stengetider:** one page: the next poll closing on top (Oslo and ET time,
   a countdown, and the states with their flags), the rest of the night's
-  closings underneath. Times come from The People's Tally (`polls` in
-  core.json, refreshed with it; snapshot in `src/polls.json`). The tab hides
+  closings underneath. Times use the retained People's Tally snapshot in `src/polls.json`
+  (CC BY 4.0), credited on the closing-times page. The tab hides
   itself after the last close (1 AM ET, 07:00 Oslo).
 - **Delstatene:** a fact sheet per visit: Fakta (flag, the state's outline,
   where it is in the US, capital, largest city, 2020 population, area compared
@@ -61,8 +64,8 @@ of the party holding them now, with a small legend under the bar. Then two tabs 
   called chips use a solid winning-party colour.
   Folkevalg appears only for states with ballot measures, two per page;
   NEXT and automatic rotation walk through all measures before moving on.
-  Measures come from The People's Tally's `meas` field in core.json, with a
-  bundled snapshot in `src/measures.json` and Norwegian editorial summaries.
+  Measures use the retained People's Tally snapshot in `src/measures.json`
+  (CC BY 4.0) and Norwegian editorial summaries, with their own source credit.
   Translations are used only while the original description still matches;
   new or changed descriptions use the source text until translated.
   States whose polls close next come first.
@@ -90,37 +93,66 @@ empty. Calls interrupt any tab.
 Query: `t` (replay start, ET hours, e.g. 21.5), `speed` (sim minutes per
 second), `hold`, `view` (e.g. `huset:jevne`), `auto=0`, `autoplay=0`.
 
-## Real data: The People's Tally
+## Real data: civicAPI
 
-By default the template reads The People's Tally open data itself
-(CC BY 4.0, no key) from `https://thepeoplestally.com` (`?feed=` to change,
-`?feed=off` to disable). Code: `src/peoplestally.ts`.
+By default the template reads civicAPI v2 directly from `https://civicapi.org`
+(no key). Use `?feed=` to change the origin to a compatible proxy, or
+`?feed=off` to disable automatic fetching. Code: `src/civicapi.ts` and
+`src/main.ts`.
 
-- `/data/core.json`, at start and every 10 min: candidates per race. One
-  Democrat and one Republican per race; where there is no Democrat, the
-  strongest other candidate takes that side with their own label (e.g.
-  "Uavhengig"). Candidate portraits are embedded in
-  `src/portrait-catalogue.json`, keyed by name and state. Sources include
-  Congress, campaigns, government biographies, candidate profiles, and news
-  coverage. The bundled photos also work offline. Missing photos use a
-  bounded Wikipedia lookup, with initials as the fallback.
-- `/data/results.json`, every 30 s: votes per candidate become two-party
-  shares, `votes / exp` the share counted, a `winner` flag a call. The call
-  screen names who called it (`called_by`) and the source (`src`).
-- `/api/live`, every 60 s (their docs ask for no faster): the live bundle the
-  site itself polls. On election night numbers appear here long before
-  results.json is published, so races results.json doesn't have yet come from
-  here. States whose feed is still "dry" (before polls close) are skipped.
-  There is no expected-vote figure: the share counted is reporting units
-  (counties, towns) when given, otherwise unknown, and rows show the vote count
-  instead of "% talt". Its `ev` (early votes) is CC BY-NC-ND and is not used.
-- Numbers for a race are ignored until its polls have closed (state feeds may
-  post test data before then; `?early=1` turns this off for testing).
-- The first real numbers switch the board to live; the credit reads "The
-  People's Tally (CC BY 4.0) · uoffisielle tall", or "Ingen nye tall siden …"
-  if the feed has been quiet for 5 minutes.
-- The core.json line format is undocumented; it was read from the data.
-  The CasparCG browser does not enforce CORS, so it can fetch the files directly.
+- House: `/api/v2/race/87524` (435 district entries).
+- Senate: `/api/v2/race/87528` (35 contests, including FL/OH specials).
+- Governors: `/api/v2/race/87535` (36 contests).
+- Each contest refreshes independently 10 seconds after its previous request
+  completes. Requests time out after 15 seconds. A failed contest retains its
+  previous results while the others continue updating.
+- Calls in the first successful response are announced too. Later polls do not
+  repeat unchanged calls; a corrected winner or a withdrawn and reissued call
+  triggers a new announcement. House holds and flips both receive animations.
+- Candidate names, actual party labels, votes, reporting percentages and winner
+  flags come from each district/state's `region_results`. At-large House IDs
+  such as `ak-al` map to `AK-1`. Missing entries retain their previous state;
+  zero-vote entries are waiting, not missing. Explicit corrections can withdraw
+  a call or return a race to waiting.
+- The existing two-slot display shows one Democrat and one Republican where
+  available, otherwise an independent or another candidate with their own party
+  label. Vote shares are normalized over the two displayed candidates; total
+  votes include all candidates. Same-party races retain the actual parties.
+- `percent_reporting / 100` supplies progress. This is the provider's reporting
+  percentage, not an independently calculated percentage of expected ballots.
+  Unknown progress remains unknown. No winner is inferred from leads or progress:
+  only an explicit candidate `winner: true` generates a call, credited to civicAPI.
+- Production responses marked `test_data: true` are rejected, even with
+  `?early=1`. Numbers are also suppressed until the state's first poll close;
+  `?early=1` bypasses only that time gate for testing.
+- Provider `last_updated` timestamps drive freshness for each contest. After
+  five minutes, or on a request failure, the credit shows the last update time.
+  A successful fetch of old data does not make it fresh, and older snapshots
+  cannot overwrite newer ones.
+- Current House seat parties come from the bundled civicAPI incumbent-party
+  snapshot in `src/house-incumbents.json`. No forecast probabilities are used.
+  Senate/governor incumbent candidates can also update the existing seat metadata.
+- Candidate portraits remain bundled in `src/portrait-catalogue.json`, keyed
+  by name and state. Missing photos use the existing bounded Wikipedia lookup
+  with initials as fallback.
+- The retained poll-closing and ballot-measure snapshots are static reference
+  material, with their original People's Tally / Ballotpedia credits. There are
+  no runtime requests to People's Tally.
+
+### Attribution and reuse
+
+civicAPI's [API documentation](https://civicapi.org/api-documentation) and
+[usage policy](https://civicapi.org/faq) allow personal, non-commercial and
+commercial use, including publishing live results. For non-personal projects,
+attribution is required: link to civicapi.org (preferred) **or** mention civicAPI.
+Checked 4 November 2026.
+
+The non-demo notice always names civicAPI and links to https://civicapi.org/,
+including during full-screen calls and feed failures. Results credits also name
+civicAPI, and state election pages link to it. This supplies visible on-air
+attribution as well as a clickable credit for web use. Demo mode explicitly
+labels invented numbers and hides candidate names. Retained reference material
+and photos keep their own credits; civicAPI is not labelled CC BY 4.0.
 
 The portrait audit in `tools/portraits/coverage.json` lists every displayed
 candidate without a bundled photo. It covers the two slots selected by the
@@ -155,11 +187,11 @@ last state. Each push is diffed against the last; the diff drives the motion.
 - Every call is a full-screen sequence (all but the notice band and clocks),
   then the rotation resumes. A thin line per step shows progress; `CG NEXT`
   skips a step.
-  - Single Senate/governor call (about 20 s): 1) state name and verdict on the
+  - Single call (about 20 s): 1) state/district name and verdict on the
     full party colour; 2) the colour shrinks to a left column and both
     candidates appear, the winner first, the loser dimmed, bars growing;
     3) what it means: seat totals, the bar to the majority line, one sentence.
-  - Poll-close batch / House seats changing hands: 1) "6 løp avgjort";
+  - Poll-close batch / simultaneous House calls: 1) "6 løp avgjort";
     2) a tile per state or district in the party colour; 3) what it means.
   - A backlog of more than four calls is folded into one batch per contest.
 - Before the first call, the band above the clocks shows "Opptelling": waiting
@@ -167,3 +199,9 @@ last state. Each push is diffed against the last; the diff drives the motion.
   many are decided. It refreshes with each update. After a call it shows "Siste".
 - Control of a chamber: its own sequence (headline, then the totals), ahead
   of anything queued; afterwards the board lands on that chamber's overview.
+
+## Verification
+
+Run `node --experimental-strip-types --test tools/civicapi/test.mjs` (Node 22.6+)
+and `npm run build`. The adapter tests cover district IDs, third-party and
+same-party candidates, explicit calls, test-data rejection and corrections.

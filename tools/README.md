@@ -18,9 +18,14 @@ campaigns, government biographies, candidate profiles, and news sources.
 - `portraits/`: the app's portrait catalogue and coverage audit. From the
   **repository root**, with Python 3 and Pillow installed:
 
-      curl --fail https://thepeoplestally.com/data/core.json -o /tmp/midterms-core.json
-      python3 tools/portraits/fetch.py --core /tmp/midterms-core.json
-      python3 tools/portraits/fetch.py --core /tmp/midterms-core.json --retry
+      node --experimental-strip-types tools/civicapi/roster.mjs /tmp/civicapi-roster.json
+      python3 tools/portraits/fetch.py --roster /tmp/civicapi-roster.json
+      python3 tools/portraits/fetch.py --roster /tmp/civicapi-roster.json --retry
+
+  The roster exporter needs Node 22.6+ and uses the app's civicAPI parser, so
+  the audit follows the same two displayed candidates per race. It rejects
+  test data. Credit civicAPI for reused election data (https://civicapi.org/faq).
+  `fetch.py --core FILE` remains available for historical audits.
 
   `--legislators FILE` optionally supplies the public `congress-legislators`
   JSON directory for bioguide IDs absent from the feed. Downloads and
@@ -57,5 +62,6 @@ campaigns, government biographies, candidate profiles, and news sources.
   Verification:
 
       node tools/portraits/test.mjs
+      node --experimental-strip-types --test tools/civicapi/test.mjs
       python3 tools/portraits/test_sources.py
       npm run build
